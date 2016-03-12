@@ -33,5 +33,58 @@ body,html,
   border-radius:50%;
   position:absolute;
   top: 114px;
-  left: 77px;
+  left: 87.5px;
+  border:3px solid #fff;
+  -webkit-box-shadow: 1px 2px 10px rgba(0,0,0,.17);
+  -moz-box-shadow: 1px 2px 10px rgba(0,0,0,.17);
+  box-shadow: 1px 2px 10px rgba(0,0,0,.17);
+}
+.my-name {
+  margin-top: 60px;
+  text-align: center;
+  color: #696969;
+}
+.e-mail {
+  text-align: center;
+  padding: 0px;
+  margin: 0px;
+  color: #9B9B9B;
+  margin-top: 10px;
+}
+.nav-bd {
+  margin-top:20px;
+}
+.my-github a {
+  display:block;
+  width:30px;
+  height:30px;
+  background:url(../images/github.png) no-repeat center center;
+  background-color:#afb6ca;
+  border-radius:50%;
+  margin:0 auto;
+}
+.my-github a:hover {
+  box-sizing:border-box;
+  border: 1px solid #909ab6;
+}
+.info {
+  margin-top:75px;
+}
+.blog-list {
+  text-align:center;
+  margin-top:20px;
+}
+.blog-list ul {
+  margin:0px;
+  padding:0px;
+}
+.blog-list ul li {
+  margin-top:10px;
+}
+.blog-list ul li a {
+  color:#696969;
+  text-decoration:none;
+}
+.blog-list ul li a:hover {
+  color: #b0a0aa;
 }
