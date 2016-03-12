@@ -1,0 +1,37 @@
+body,html,
+.main {
+  height:100%;
+  overflow:hidden;
+  background:#f9f8f5;
+}
+.main .main-wrapper {
+  height:100%;
+}
+.main .main-wrapper .left-nav {
+  width:20%;
+  height:100%;
+  min-width:300px;
+  float:left;
+  background-color:#fff;
+}
+.main .main-wrapper .article-content {
+  width:70%;
+  float:left;
+}
+.nav-hd .h-image {
+  height:180px;
+  background-color:#484848;
+  position:relative;
+}
+.nav-hd .h-image:before {
+  content:"";
+  display:block;
+  width:125px;
+  height:125px;
+  background:url(../images/ai.jpg) no-repeat;
+  background-size:cover;
+  border-radius:50%;
+  position:absolute;
+  top: 114px;
+  left: 77px;
+}
