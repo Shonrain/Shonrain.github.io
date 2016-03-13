@@ -1,3 +1,7 @@
+ul,li,span,h1,h2,h3,h4 {
+  padding:0px;
+  margin:0px;
+}
 body,html,
 .main {
   height:100%;
@@ -15,8 +19,10 @@ body,html,
   background-color:#fff;
 }
 .main .main-wrapper .article-content {
-  width:70%;
+  width:79%;
+  height:100%;
   float:left;
+  overflow-y:scroll;
 }
 .nav-hd .h-image {
   height:180px;
@@ -87,4 +93,108 @@ body,html,
 }
 .blog-list ul li a:hover {
   color: #b0a0aa;
+}
+.article-content .articles-list-content ul li {
+  background-color:#fff;
+  width:95%;
+  margin:20px auto;
+}
+h2.article-title {
+  height: 50px;
+  border-left: 5px solid #868484;
+  padding: 10px;
+  line-height:50px;
+}
+h2.article-title > a {
+  display:block;
+  padding-left:15px;
+  color:#696969;
+  text-decoration:none;
+  -webkit-transition: color 0.3s;
+  -moz-transition: color 0.3s;
+  -o-transition: color 0.3s;
+  -webkit-transition: color 0.3s;
+  -moz-transition: color 0.3s;
+  -ms-transition: color 0.3s;
+  transition: color 0.3s;
+}
+h2.article-title > a:hover {
+  color:#b0a0aa;
+}
+h2.article-title > a span.date {
+  float:right;
+  font-size:12px;
+  color:#ccc;
+  font-weight:normal;
+  margin-right:30px;
+}
+.article-body {
+  border-bottom:1px solid #ddd;
+  margin: 20px 30px 0px 30px;
+  padding-bottom:20px;
+}
+.article-ft {
+  height: 60px;
+  padding: 0 30px;
+  line-height: 60px;
+}
+.tags {
+  height:60px;
+}
+.tags ul {
+  height:60px;
+  float:left;
+}
+.tags a {
+  display:inline-block;
+  background: #4d4d4d;
+  color: #fff;
+  font-size: 12px;
+  padding: 2px 8px 4px;
+  float:right;
+  margin-top:20px;
+  line-height: 16px;
+  text-decoration:none;
+  -webkit-transition: background 0.3s;
+  -moz-transition: background 0.3s;
+  -ms-transition: background 0.3s;
+  transition: background 0.3s;
+}
+.tags a:hover {
+  background: #3c3c3c;
+}
+.tags ul.tags-list li {
+  background: #ba8f6c;
+  margin: 0px;
+  position: relative;
+  color: #fff;
+  height: 18px;
+  line-height: 18px;
+  font-size: 12px;
+  padding: 0 0px 0px 10px;
+  margin-top: 20px;
+}
+
+.tags ul.tags-list li:before {
+  content: " ";
+  width: 0px;
+  height: 0px;
+  position: absolute;
+  top: 0;
+  left: -18px;
+  border: 9px solid transparent;
+  border-right-color: #ba8f6c;
+}
+.tags ul.tags-list li:after {
+    content: " ";
+    width: 4px;
+    height: 4px;
+    background-color: #fff;
+    -webkit-border-radius: 4px;
+    border-radius: 4px;
+    -webkit-box-shadow: 0px 0px 0px 1px rgba(0,0,0,0.3);
+    box-shadow: 0px 0px 0px 1px rgba(0,0,0,0.3);
+    position: absolute;
+    top: 7px;
+    left: 2px;
 }
