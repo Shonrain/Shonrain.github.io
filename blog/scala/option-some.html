@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <link rel="stylesheet" type="text/css" href="../../stylesheets/stylesheet.css" media="screen">
+    <!-- <link rel="stylesheet" type="text/css" href="../../stylesheets/github-dark.css" media="screen"> -->
+    <!-- <link rel="stylesheet" type="text/css" href="../../stylesheets/print.css" media="print"> -->
+    <link rel="stylesheet" type="text/css" href="../../stylesheets/index.css" />
+    <link rel="stylesheet" type="text/css" href="../../stylesheets/article.css" />
+    <title>逗比Shaw</title>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-wrapper">
+        <div class="left-nav">
+          <div class="left-nav-wrapper">
+            <div class="nav-hd">
+              <div class="h-image">
+                <em></em>
+              </div>
+              <div class="info">
+                <h2 class="my-name">Shaw</h2>
+                <p class="e-mail">email:shaw@dripower.com</p>
+              </div>
+            </div>
+            <div class="nav-bd">
+              <div class="my-github">
+                <a href="https://github.com/Shonrain"></a>
+              </div>
+              <div class="blog-list">
+                <ul>
+                  <li>
+                    <a href="http://shonrain.github.io/">
+                      主页
+                    </a>
+                  </li>
+                  <li>
+                    <a href="all.html">
+                      所有文章
+                    </a>
+                  </li>
+                  <li>
+                    <a href="informal.html">
+                      随笔
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="article-content">
+          <div class="article-content-wrap">
+            <div class="articles-list-content">
+              <ul class="articles-list">
+                <li>
+                  <div class="article-wrap">
+                    <h2 class="article-title">
+                      <a href="/blog/scala/option-some.html">
+                        scala的option和some
+                        <span class="date">
+                          2016-3-12
+                        </span>
+                      </a>
+                      <div class="tags">
+                        <ul class="tags-list">
+                          <li>scala</li>
+                        </ul>
+                      </div>
+                    </h2>
+                    <div class="article-body">
+                      <p>
+                        对于学习 Scala 的 Java开发人员来说，对象是一个比较自然、简单的入口点。在 本系列 前几期文章中，我介绍了 Scala 中一些面向对象的编程方法，这些方法实际上与 Java 编程的区别不是很大。我还向您展示了 Scala 如何重新应用传统的面向对象概念，找到其缺点，并根据 21 世纪的新需求重新加以改造。Scala 一直隐藏的一些重要内容将要现身：Scala 也是一种函数语言（这里的函数性是与其他 dys 函数语言相对而言的）。
+                      </p>
+                      <p>
+                        Scala 的面向函数性非常值得探讨，这不仅是因为已经研究完了对象内容。Scala 中的函数编程将提供一些新的设计结构和理念以及一些内置构造，它们使某些场景（例如并发性）的编程变得非常简单。
+                      </p>
+                      <p>
+                        C# 2.0 可变为 null 值的类型其他语言已试图通过各种方法解决 “可 null 值化” 问题：C++ 一直都忽略了这个问题，直至最后确定 null 和 0 是不同的值。Java 语言仍然没有彻底解决这个问题，而是依赖于自动装箱（autobox）— 将原语类型自动转换为它们的包装器对象（在 1.1 以后引入）— 帮助 Java 程序员解决问题。一些模式爱好者建议每种类型都应该有一个对应的 “Null Object”，即将自己的所有方法重写为不执行任何操作的类型（实际上是子类型）的实例 — 实践证明这需要大量工作。C# 1.0 发布后，C# 设计者决定采取一种完全不同的方法解决 null 值化问题。
+                      </p>
+                      <p>
+                        C# 2.0 引入了可变为 null 值的类型 的概念，重要的是添加了语法支持，认为任何特定值类型（基本指原语类型）都可以通过将 null 封装到一个泛型/模板类 Nullable<T>，从而提供 null 支持。Nullable<T> 本身是在类型声明中通过 ? 修饰符号引入。因此，int? 表示一个整数也可能为 null。
+                      </p>
+                      <p>
+                        表面上看，这似乎很合理，但是事情很快就变得复杂起来。int 和 int? 是否应该被视为可兼容类型，如果是的话，什么时候将 int 提升为 int?，反之呢？当将 int 添加到 int? 会发生什么，结果会是 null 吗？这类问题等等。随后类型系统进行了一些重要的调整，可变为 null 值的类型随后包含到了 2.0 中 — 而 C# 程序员几乎完全忽略了它们。
+                      </p>
+                      <p>
+                        回顾一下 Option 类型的函数方法，它使 Option[T] 和 Int 之间的界限变得很清晰，看上去要比其他方法更加简单。在那些围绕可变为 null 值类型的反直觉（counterintuitive）提升规则之间进行比较时，尤其如此。（函数领域对该问题近二十年的思考是值得的）。要使用 Option[T] 必须付出一些努力，但是总的来说，它产生了更清晰的代码和期望。
+                        .本月，您将首次进入 Scala 的函数编程领域，查看大多数函数语言中常见的四种类型：列表（list）、元组（tuple）、集合（set）和 Option 类型。您还将了解 Scala 的数组，后者对其他函数语言来说十分新鲜。 这些类型都提出了编写代码的新方式。当结合传统面向对象特性时，可以生成十分简洁的结果。
+                      </p>
+                      <p>
+                        使用 Option(s)
+                      </p>
+                      <p>
+                        在什么情况下，“无” 并不代表 “什么也没有”？当它为 0 的时候，与 null 有什么关系。
+                      </p>
+                      <p>
+                        对于我们大多数人都非常熟悉的概念，要在软件中表示为 “无” 是一件十分困难的事。例如，看看 C++ 社区中围绕 NULL 和 0 进行的激烈讨论，或是 SQL 社区围绕 NULL 列值展开的争论，便可知晓一二。 NULL 或 null 对于大多数程序员来说都表示 “无”，但是这在 Java 语言中引出了一些特殊问题。
+                      </p>
+                      <p>
+                        考虑一个简单操作，该操作可以从一些位于内存或磁盘的数据库查找程序员的薪资：API 允许调用者传入一个包含程序员名字的 String，这会返回什么呢？从建模角度来看，它应该返回一个 Int，表示程序员的年薪；但是这里有一个问题，如果程序员不在数据库中（可能根本没有雇用她，或者已经被解雇，要不就是输错了名字……），那么应该返回 什么。如果返回类型是 Int，则不能返回 null，这个 “标志” 通常表示没有在数据库中找到该用户（您可能认为应该抛出一个异常，但是大多数时候数据库丢失值并不能视为异常，因此不应该在这里抛出异常）。
+                      </p>
+                      <p>
+                        在 Java 代码中，我们最终将方法标记为返回 java.lang.Integer，这迫使调用者知道方法可以返回 null。自然，我们可以依靠程序员来全面归档这个场景，还可以依赖程序员读取 精心准备的文档。这类似于：我们可以要求经理倾听我们反对他们要求的不可能完成的项目期限，然后经理再进一步把我们的反对传达给上司和用户。
+                      </p>
+                      <p>
+                        Scala 提供了一种普通的函数方法，打破了这一僵局。在某些方面，Option 类型或 Option[T]，并不重视描述。它是一个具有两个子类 Some[T] 和 None 的泛型类，用来表示 “无值” 的可能性，而不需要语言类型系统大费周折地支持这个概念。实际上，使用 Option[T] 类型可以使问题更加清晰（下一节将用到）。
+                      </p>
+                      <p>
+                        在使用 Option[T] 时，关键的一点是认识到它实质上是一个大小为 “1” 的强类型集合，使用一个不同的值 None 表示 “nothing” 值的可能性。因此，在这里方法没有返回 null 表示没有找到数据，而是进行声明以返回 Option[T]，其中 T 是返回的原始类型。那么，对于没有查找到数据的场景，只需返回 None，如下所示：
+                      </p>
+                      <p>
+                        清单 1. 准备好踢足球了吗？
+                      </p>
+                      <p>
+                        java代码：
+                      </p>
+                      <p>
+                        <div class="highlight highlight-source-scala"><pre><span class="pl-k">@</span><span class="pl-en">Test</span> <span class="pl-k">def</span> <span class="pl-en">simpleOptionTest</span> <span class="pl-k">=</span>
+{
+                          <span class="pl-k">val</span> <span class="pl-en">footballTeamsAFCEast</span> <span class="pl-k">=</span>
+                          <span class="pl-en">Map</span>(<span class="pl-s"><span class="pl-pds">"</span>New England<span class="pl-pds">"</span></span> <span class="pl-k">-</span><span class="pl-k">&gt;</span> <span class="pl-s"><span class="pl-pds">"</span>Patriots<span class="pl-pds">"</span></span>,
+                          <span class="pl-s"><span class="pl-pds">"</span>New York<span class="pl-pds">"</span></span> <span class="pl-k">-</span><span class="pl-k">&gt;</span> <span class="pl-s"><span class="pl-pds">"</span>Jets<span class="pl-pds">"</span></span>,
+                          <span class="pl-s"><span class="pl-pds">"</span>Buffalo<span class="pl-pds">"</span></span> <span class="pl-k">-</span><span class="pl-k">&gt;</span> <span class="pl-s"><span class="pl-pds">"</span>Bills<span class="pl-pds">"</span></span>,
+                          <span class="pl-s"><span class="pl-pds">"</span>Miami<span class="pl-pds">"</span></span> <span class="pl-k">-</span><span class="pl-k">&gt;</span> <span class="pl-s"><span class="pl-pds">"</span>Dolphins<span class="pl-pds">"</span></span>,
+                          <span class="pl-s"><span class="pl-pds">"</span>Los Angeles<span class="pl-pds">"</span></span> <span class="pl-k">-</span><span class="pl-k">&gt;</span> <span class="pl-c1">null</span>)
+
+  assertEquals(footballTeamsAFCEast.get(<span class="pl-s"><span class="pl-pds">"</span>Miami<span class="pl-pds">"</span></span>), <span class="pl-en">Some</span>(<span class="pl-s"><span class="pl-pds">"</span>Dolphins<span class="pl-pds">"</span></span>))
+  assertEquals(footballTeamsAFCEast.get(<span class="pl-s"><span class="pl-pds">"</span>Miami<span class="pl-pds">"</span></span>).get(), <span class="pl-s"><span class="pl-pds">"</span>Dolphins<span class="pl-pds">"</span></span>)
+  assertEquals(footballTeamsAFCEast.get(<span class="pl-s"><span class="pl-pds">"</span>Los Angeles<span class="pl-pds">"</span></span>), <span class="pl-en">Some</span>(<span class="pl-c1">null</span>))
+  assertEquals(footballTeamsAFCEast.get(<span class="pl-s"><span class="pl-pds">"</span>Sacramento<span class="pl-pds">"</span></span>), <span class="pl-c1">None</span>)
+}  </pre></div>
+                      </p>
+                      <p>
+                        注意，Scala Map 中 get 的返回值实际上并不对应于传递的键。相反，它是一个 Option[T] 实例，可以是与某个值有关的 Some()，也可以是 None，因此可以很清晰地表示没有在 map 中找到键。如果它可以表示 map 上存在某个键，但是有对应的 null 值，这一点特别重要了。比如清单 1 中 Los Angeles 键。
+                      </p>
+                      <p>
+                        通常，当处理 Option[T] 时，程序员将使用模式匹配，这是一个非常函数化的概念，它允许有效地 “启用” 类型和/或值，更不用说在定义中将值绑定到变量、在 Some() 和 None 之间切换，以及提取 Some 的值（而不需要调用麻烦的 get() 方法）。清单 2 展示了 Scala 的模式匹配：
+                      </p>
+                      <p>
+                        清单 2. 巧妙的模式匹配
+                      </p>
+                      <p>
+                        java代码：
+                      </p>
+                      <p>
+                        <div class="highlight highlight-source-scala"><pre><span class="pl-k">@</span><span class="pl-en">Test</span> <span class="pl-k">def</span> <span class="pl-en">optionWithPM</span> <span class="pl-k">=</span>
+{
+                          <span class="pl-k">val</span> <span class="pl-en">footballTeamsAFCEast</span> <span class="pl-k">=</span>
+                          <span class="pl-en">Map</span>(<span class="pl-s"><span class="pl-pds">"</span>New England<span class="pl-pds">"</span></span> <span class="pl-k">-</span><span class="pl-k">&gt;</span> <span class="pl-s"><span class="pl-pds">"</span>Patriots<span class="pl-pds">"</span></span>,
+                          <span class="pl-s"><span class="pl-pds">"</span>New York<span class="pl-pds">"</span></span> <span class="pl-k">-</span><span class="pl-k">&gt;</span> <span class="pl-s"><span class="pl-pds">"</span>Jets<span class="pl-pds">"</span></span>,
+                          <span class="pl-s"><span class="pl-pds">"</span>Buffalo<span class="pl-pds">"</span></span> <span class="pl-k">-</span><span class="pl-k">&gt;</span> <span class="pl-s"><span class="pl-pds">"</span>Bills<span class="pl-pds">"</span></span>,
+                          <span class="pl-s"><span class="pl-pds">"</span>Miami<span class="pl-pds">"</span></span> <span class="pl-k">-</span><span class="pl-k">&gt;</span> <span class="pl-s"><span class="pl-pds">"</span>Dolphins<span class="pl-pds">"</span></span>)
+
+                          <span class="pl-k">def</span> <span class="pl-en">show</span>(<span class="pl-v">value</span> : <span class="pl-en">Option</span>[<span class="pl-k">String</span>]) <span class="pl-k">=</span>
+  {
+    value <span class="pl-k">match</span>
+    {
+                          <span class="pl-k">case</span> <span class="pl-en">Some</span>(x) <span class="pl-k">=&gt;</span> x
+                          <span class="pl-k">case</span> <span class="pl-c1">None</span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">"</span>No team found<span class="pl-pds">"</span></span>
+    }
+  }
+
+  assertEquals(show(footballTeamsAFCEast.get(<span class="pl-s"><span class="pl-pds">"</span>Miami<span class="pl-pds">"</span></span>)), <span class="pl-s"><span class="pl-pds">"</span>Dolphins<span class="pl-pds">"</span></span>)
+} </pre></div>
+                      </p>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
