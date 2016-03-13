@@ -119,12 +119,12 @@
                       <p>
                         <div class="highlight highlight-source-scala"><pre><span class="pl-k">@</span><span class="pl-en">Test</span> <span class="pl-k">def</span> <span class="pl-en">simpleOptionTest</span> <span class="pl-k">=</span>
 {
-                          <span class="pl-k">val</span> <span class="pl-en">footballTeamsAFCEast</span> <span class="pl-k">=</span>
-                          <span class="pl-en">Map</span>(<span class="pl-s"><span class="pl-pds">"</span>New England<span class="pl-pds">"</span></span> <span class="pl-k">-</span><span class="pl-k">&gt;</span> <span class="pl-s"><span class="pl-pds">"</span>Patriots<span class="pl-pds">"</span></span>,
-                          <span class="pl-s"><span class="pl-pds">"</span>New York<span class="pl-pds">"</span></span> <span class="pl-k">-</span><span class="pl-k">&gt;</span> <span class="pl-s"><span class="pl-pds">"</span>Jets<span class="pl-pds">"</span></span>,
-                          <span class="pl-s"><span class="pl-pds">"</span>Buffalo<span class="pl-pds">"</span></span> <span class="pl-k">-</span><span class="pl-k">&gt;</span> <span class="pl-s"><span class="pl-pds">"</span>Bills<span class="pl-pds">"</span></span>,
-                          <span class="pl-s"><span class="pl-pds">"</span>Miami<span class="pl-pds">"</span></span> <span class="pl-k">-</span><span class="pl-k">&gt;</span> <span class="pl-s"><span class="pl-pds">"</span>Dolphins<span class="pl-pds">"</span></span>,
-                          <span class="pl-s"><span class="pl-pds">"</span>Los Angeles<span class="pl-pds">"</span></span> <span class="pl-k">-</span><span class="pl-k">&gt;</span> <span class="pl-c1">null</span>)
+  <span class="pl-k">val</span> <span class="pl-en">footballTeamsAFCEast</span> <span class="pl-k">=</span>
+  <span class="pl-en">Map</span>(<span class="pl-s"><span class="pl-pds">"</span>New England<span class="pl-pds">"</span></span> <span class="pl-k">-</span><span class="pl-k">&gt;</span> <span class="pl-s"><span class="pl-pds">"</span>Patriots<span class="pl-pds">"</span></span>,
+  <span class="pl-s"><span class="pl-pds">"</span>New York<span class="pl-pds">"</span></span> <span class="pl-k">-</span><span class="pl-k">&gt;</span> <span class="pl-s"><span class="pl-pds">"</span>Jets<span class="pl-pds">"</span></span>,
+  <span class="pl-s"><span class="pl-pds">"</span>Buffalo<span class="pl-pds">"</span></span> <span class="pl-k">-</span><span class="pl-k">&gt;</span> <span class="pl-s"><span class="pl-pds">"</span>Bills<span class="pl-pds">"</span></span>,
+  <span class="pl-s"><span class="pl-pds">"</span>Miami<span class="pl-pds">"</span></span> <span class="pl-k">-</span><span class="pl-k">&gt;</span> <span class="pl-s"><span class="pl-pds">"</span>Dolphins<span class="pl-pds">"</span></span>,
+  <span class="pl-s"><span class="pl-pds">"</span>Los Angeles<span class="pl-pds">"</span></span> <span class="pl-k">-</span><span class="pl-k">&gt;</span> <span class="pl-c1">null</span>)
 
   assertEquals(footballTeamsAFCEast.get(<span class="pl-s"><span class="pl-pds">"</span>Miami<span class="pl-pds">"</span></span>), <span class="pl-en">Some</span>(<span class="pl-s"><span class="pl-pds">"</span>Dolphins<span class="pl-pds">"</span></span>))
   assertEquals(footballTeamsAFCEast.get(<span class="pl-s"><span class="pl-pds">"</span>Miami<span class="pl-pds">"</span></span>).get(), <span class="pl-s"><span class="pl-pds">"</span>Dolphins<span class="pl-pds">"</span></span>)
@@ -147,18 +147,18 @@
                       <p>
                         <div class="highlight highlight-source-scala"><pre><span class="pl-k">@</span><span class="pl-en">Test</span> <span class="pl-k">def</span> <span class="pl-en">optionWithPM</span> <span class="pl-k">=</span>
 {
-                          <span class="pl-k">val</span> <span class="pl-en">footballTeamsAFCEast</span> <span class="pl-k">=</span>
-                          <span class="pl-en">Map</span>(<span class="pl-s"><span class="pl-pds">"</span>New England<span class="pl-pds">"</span></span> <span class="pl-k">-</span><span class="pl-k">&gt;</span> <span class="pl-s"><span class="pl-pds">"</span>Patriots<span class="pl-pds">"</span></span>,
-                          <span class="pl-s"><span class="pl-pds">"</span>New York<span class="pl-pds">"</span></span> <span class="pl-k">-</span><span class="pl-k">&gt;</span> <span class="pl-s"><span class="pl-pds">"</span>Jets<span class="pl-pds">"</span></span>,
-                          <span class="pl-s"><span class="pl-pds">"</span>Buffalo<span class="pl-pds">"</span></span> <span class="pl-k">-</span><span class="pl-k">&gt;</span> <span class="pl-s"><span class="pl-pds">"</span>Bills<span class="pl-pds">"</span></span>,
-                          <span class="pl-s"><span class="pl-pds">"</span>Miami<span class="pl-pds">"</span></span> <span class="pl-k">-</span><span class="pl-k">&gt;</span> <span class="pl-s"><span class="pl-pds">"</span>Dolphins<span class="pl-pds">"</span></span>)
+    <span class="pl-k">val</span> <span class="pl-en">footballTeamsAFCEast</span> <span class="pl-k">=</span>
+    <span class="pl-en">Map</span>(<span class="pl-s"><span class="pl-pds">"</span>New England<span class="pl-pds">"</span></span> <span class="pl-k">-</span><span class="pl-k">&gt;</span> <span class="pl-s"><span class="pl-pds">"</span>Patriots<span class="pl-pds">"</span></span>,
+    <span class="pl-s"><span class="pl-pds">"</span>New York<span class="pl-pds">"</span></span> <span class="pl-k">-</span><span class="pl-k">&gt;</span> <span class="pl-s"><span class="pl-pds">"</span>Jets<span class="pl-pds">"</span></span>,
+    <span class="pl-s"><span class="pl-pds">"</span>Buffalo<span class="pl-pds">"</span></span> <span class="pl-k">-</span><span class="pl-k">&gt;</span> <span class="pl-s"><span class="pl-pds">"</span>Bills<span class="pl-pds">"</span></span>,
+    <span class="pl-s"><span class="pl-pds">"</span>Miami<span class="pl-pds">"</span></span> <span class="pl-k">-</span><span class="pl-k">&gt;</span> <span class="pl-s"><span class="pl-pds">"</span>Dolphins<span class="pl-pds">"</span></span>)
 
-                          <span class="pl-k">def</span> <span class="pl-en">show</span>(<span class="pl-v">value</span> : <span class="pl-en">Option</span>[<span class="pl-k">String</span>]) <span class="pl-k">=</span>
+    <span class="pl-k">def</span> <span class="pl-en">show</span>(<span class="pl-v">value</span> : <span class="pl-en">Option</span>[<span class="pl-k">String</span>]) <span class="pl-k">=</span>
   {
     value <span class="pl-k">match</span>
     {
-                          <span class="pl-k">case</span> <span class="pl-en">Some</span>(x) <span class="pl-k">=&gt;</span> x
-                          <span class="pl-k">case</span> <span class="pl-c1">None</span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">"</span>No team found<span class="pl-pds">"</span></span>
+      <span class="pl-k">case</span> <span class="pl-en">Some</span>(x) <span class="pl-k">=&gt;</span> x
+      <span class="pl-k">case</span> <span class="pl-c1">None</span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">"</span>No team found<span class="pl-pds">"</span></span>
     }
   }
 
