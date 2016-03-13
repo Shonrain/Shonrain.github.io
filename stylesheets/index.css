@@ -19,10 +19,11 @@ body,html,
   background-color:#fff;
 }
 .main .main-wrapper .article-content {
-  width:79%;
-  height:100%;
-  float:left;
-  overflow-y:scroll;
+  height: 100%;
+  float: left;
+  overflow-y: scroll;
+  position: absolute;
+  left: 300px;
 }
 .nav-hd .h-image {
   height:180px;
