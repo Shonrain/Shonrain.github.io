@@ -323,10 +323,11 @@ def isAviable(c: Coupon) = {
   ???
 }
 ```
-我们先定义一个获取优惠券状态的方法
+
+我们现在就利用这些状态去渲染页面：
 
 ```scala
-def f(c: coupon, user) = {
+def f(c: coupon, user: User) = {
   if (isAviable(coupon)) {
     if (used(coupon, user)) {
       //已使用的优惠券
