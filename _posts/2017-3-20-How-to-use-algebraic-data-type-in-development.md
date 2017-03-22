@@ -2,17 +2,17 @@
 title: 如何利用 ADT 良好地组织业务
 ---
 
-在用 `Scala` 做业务开发的时候，我们大都会用到 `case class` 以及`模式匹配`，本文将介绍如何利用 `case class` 模拟 `ADT` 并在日常开发中利用 `ADT` 良好地组织业务。
+在用 `Scala` 做业务开发的时候，我们大都会用到 `case class` 以及「模式匹配」，本文将介绍如何利用 `case class` 模拟 `ADT` 并在日常开发中利用 `ADT` 良好地组织业务。
 
 ## ADT（代数数据类型）
 
-> 在计算机编程、特别是函数式编程与类型理论中，`ADT` 是一种 `组合类型（composite type）`。例如，一个类型由其它类型组合而成。两个常见的代数类型是 `product（积）类型` (比如 `tuples` 和 `records` )和 `sum（和）类型`，它也被称为 `tagged unions` 或 `variant type`。
+> 在计算机编程、特别是函数式编程与类型理论中，`ADT` 是一种 `composite type`（组合类型）。例如，一个类型由其它类型组合而成。两个常见的代数类型是 `product`（积）类型 (比如 `tuples` 和 `records` )和`sum`（和）类型，它也被称为 `tagged unions` 或 `variant type`。
 
-这里简单介绍一下常见的两种代数类型 `product （积）类型` 和 `sum （和）类型`
+这里简单介绍一下常见的两种代数类型 `product`（积）类型和 `sum`（和）类型
 
 ### 计数（Counting）
 
-在介绍两种常见代数类型之前我们先介绍一下 `计数` 的概念，方面理解后面所要介绍的内容。
+在介绍两种常见代数类型之前我们先介绍一下 「计数」 的概念，方面理解后面所要介绍的内容。
 
 为了将某个类型与我们熟悉的数字代数相关联，我们可以计算该类型有多少种取值，例如 `Bool` 类型：
 
@@ -20,7 +20,7 @@ title: 如何利用 ADT 良好地组织业务
 data Bool = true | false
 ```
 
-可以看到 `Bool` 类型有两种可能的取值，要么是 false, 要么是 true, 所以这里我们暂时将数字 `2` 与 `Bool` 类型相关联。
+可以看到 `Bool` 类型有两种可能的取值，要么是 `false`, 要么是 `true`, 所以这里我们暂时将数字 `2` 与 `Bool` 类型相关联。
 
 如果 `Bool` 类型是 `2`，那么何种类型是 `1` 呢，在 `Scala` 中 `Unit` 类型只有一种取值：
 
@@ -31,24 +31,24 @@ a: Unit = ()
 
 所以这里我们将数字 `1` 与 `Unit` 类型相关联。
 
-有了 `计数` 这个概念，接下来我们介绍常见的两种代数类型。
+有了 「计数」 这个概念，接下来我们介绍常见的两种代数类型。
 
 ### product
 
-`product` 可以理解为是一种 `组合 （combination）`，可以通过我们熟悉的 `*（乘法）` 操作来产生，对应的类型为：
+`product` 可以理解为是一种 组合（`combination`），可以通过我们熟悉的 `*`（乘法） 操作来产生，对应的类型为：
 
 ```
 data Mul a b = Mul a b
 ```
 也就是说， `a * b ` 类型是同时持有 `a` 和 `b` 的容器。
 
-在 `Scala`中，`元组（tuples）` 就是这样的，eg：
+在 `Scala`中，`tuples`（元组）就是这样的，eg：
 
 ```scala
 scala> val b = (Boolean, Boolean)
 b: (Boolean.type, Boolean.type) = (object scala.Boolean,object scala.Boolean)
 ```
-我们定义的 `元组 b` 就是两个 `Boolean` 类型的组合，也就是说，`元组 b` 是同时拥有两个 `Boolean` 类型的容器，可以通过我们前面介绍的 `计数` 的概念来理解：
+我们定义的元组 `b` 就是两个 `Boolean` 类型的组合，也就是说，元组 `b` 是同时拥有两个 `Boolean` 类型的容器，可以通过我们前面介绍的 「计数」 的概念来理解：
 
 `Boolean` 类型有两种取值，当 `Boolean` 和 `Boolean` 通过 `*` 操作进行组合时：
 
@@ -56,7 +56,7 @@ b: (Boolean.type, Boolean.type) = (object scala.Boolean,object scala.Boolean)
 2 * 2 = 4
 ```
 
-所以我们定义的 `元组 b` 有四种可能的取值，我们利用 `模式匹配` 来列举这四种取值：
+所以我们定义的元组 `b` 有四种可能的取值，我们利用 「模式匹配」 来列举这四种取值：
 
 ```scala
 b match {
@@ -69,7 +69,7 @@ b match {
 
 ### sum
 
-`sum` 可以理解为是一种 `选择（alternation）`，可以通过我们熟悉的 `+ （加法）` 操作来产生，对应的类型为：
+`sum` 可以理解为是一种 `alternation`（选择），可以通过我们熟悉的 `+` 操作来产生，对应的类型为：
 
 ```
 data Add a b = AddL a | AddR b
@@ -77,9 +77,9 @@ data Add a b = AddL a | AddR b
 
 `a + b` 是一个和类型，同时拥有 `a` 或者 `b`。
 
-注意这里是 a `或者` b，不同于上面介绍的 `*`。
+注意这里是 `a` 或者 `b`，不同于上面介绍的 `*`。
 
-这里可能就会有疑惑了，为什么 `+ （加法）` 是 `或者` 呢，我们依然通过前面介绍的 `计数` 的概念来理解：
+这里可能就会有疑惑了，为什么 `+` 是 「或者」 呢，我们依然通过前面介绍的 「计数」 的概念来理解：
 
 在 `Scala` 中 `Option` 就是一种 `sum` 类型，eg：
 
@@ -95,7 +95,7 @@ c: Option[Boolean] = Some(false)
 2 + 1 = 3
 ```
 
-所以我们定义的 `c: Option[Boolean]` 有三种可能的取值，我们利用 `模式匹配` 来列举这三种取值：
+所以我们定义的 `c: Option[Boolean]` 有三种可能的取值，我们利用 「模式匹配」 来列举这三种取值：
 
 ```scala
 c match {
@@ -104,7 +104,7 @@ c match {
   case None => ???
 }
 ```
-我们可以看到，`Option[Boolean]` 类型的取值要么是 `Boolean` 类型，要么是 `None` 类型，这两种类型是`不能同时`存在的，这一点与 `product` 类型不同。并且 `sum` 类型是一个`闭环`，类型的定义已经包含了所有可能性，绝无可能会出现非法状态。
+我们可以看到，`Option[Boolean]` 类型的取值要么是 `Boolean` 类型，要么是 `None` 类型，这两种类型是「不能同时」存在的，这一点与 `product` 类型不同。并且 `sum` 类型是一个「闭环」，类型的定义已经包含了所有可能性，绝无可能会出现非法状态。
 
 ## 在业务中使用 ADT
 
@@ -115,22 +115,22 @@ sealed trait Tree
 case class Node(left: Tree, right: Tree) extends Tree
 case class Leaf[A](value: A) extends Tree
 ```
-在上面 `树` 结构的定义中，`Node`、`Leaf` 通过继承 `Tree`，通过这种继承关系而得到的类型就是 `ADT` 中的 `sum`，而构造 `Node` 和 `Leaf` 的时候则是 `ADT` 中的 `product`。大家可以通过我们前面所说的 `计数`的概念来验证。
+在上面 「树」 结构的定义中，`Node`、`Leaf` 通过继承 `Tree`，通过这种继承关系而得到的类型就是 `ADT` 中的 `sum`，而构造 `Node` 和 `Leaf` 的时候则是 `ADT` 中的 `product`。大家可以通过我们前面所说的 「计数」的概念来验证。
 
 上面的代码中出现了一个关键字 `sealed`，我们先介绍一下这个关键字。
 
 ### Sealed
 
-前面我们说过 `sum` 类型是一个 `闭环`，当我们将`样例类`的`超类`声明为 `sealed` 后，该超类就变成了一个 `密封类`，`密封类`的子类都必须在与该密封类相同的文件中定义，从而达到了上面说的`闭环`的效果。
+前面我们说过 `sum` 类型是一个 「闭环」，当我们将「样例类」的「超类」声明为 `sealed` 后，该超类就变成了一个 「密封类」，「密封类」的子类都必须在与该密封类相同的文件中定义，从而达到了上面说的「闭环」的效果。
 
-比如我们现在要为上面的 `Tree` 添加一个 EmptyLeaf：
+比如我们现在要为上面的 `Tree` 添加一个 `EmptyLeaf`：
 
 ```scala
 case object EmptyLeaf extends Tree
 ```
 那这段被添加的代码必须放在我们上面声明 `Tree` 的那个文件里面，否则会报错。
 
-另外，`sealed` 关键字也可以让`编译器`检查`模式`语句的完整性,eg：
+另外，`sealed` 关键字也可以让「编译器」检查「模式」语句的完整性,eg：
 
 ```scala
 sealed trait Answer
@@ -149,7 +149,7 @@ It would fail on the following input: No
        ^
 ```
 
-`编译器`会在编译阶段提前给我们一个可能会出错的`警告（warning）`
+「编译器」会在编译阶段提前给我们一个可能会出错的「警告（warning）」
 
 ### 利用 ADT 来良好地组织业务
 
@@ -157,7 +157,7 @@ It would fail on the following input: No
 
 #### 场景一
 
-现在我们要开发一个与`优惠券`有关的业务，一般情况下，我们可能会这么去定义优惠券的结构：
+现在我们要开发一个与「优惠券」有关的业务，一般情况下，我们可能会这么去定义优惠券的结构：
 
 ```scala
 case class Coupon (
@@ -187,7 +187,7 @@ object Coupon {
 }
 ```
 
-分析：这样去定义 `优惠券` 的结构也能解决问题，但是当 `优惠券` 类型增多的时候，会出现很多的冗余数据。比如说，不同的优惠类型，会有不同优惠信息，这些优惠信息在结构中对应的字段也会有所不同：
+分析：这样去定义 「优惠券」 的结构也能解决问题，但是当 「优惠券」 类型增多的时候，会出现很多的冗余数据。比如说，不同的优惠类型，会有不同优惠信息，这些优惠信息在结构中对应的字段也会有所不同：
 
 ```scala
 case class Coupon (
@@ -210,11 +210,11 @@ case class Coupon (
 )
 ```
 
-从上定义的结构我们可以看到，当我们使用 `礼品券` 的时候，有三个字段（`leastCost`、`reduceCost`、`discount`）的值是 `None`，因为我们根本就用不到。由此可以看出，当 `优惠券` 的结构比较复杂的时候，可能会产生大量的冗余字段，从而使我们的代码看上去非常臃肿，同时增加了我们的开发难度。
+从上定义的结构我们可以看到，当我们使用 「礼品券」 的时候，有三个字段（`leastCost`、`reduceCost`、`discount`）的值是 `None`，因为我们根本就用不到。由此可以看出，当 「优惠券」 的结构比较复杂的时候，可能会产生大量的冗余字段，从而使我们的代码看上去非常臃肿，同时增加了我们的开发难度。
 
 ##### 利用 `ADT` 重新组织：
 
-分析：通过上面的讨论，我们知道 `优惠券` 可能有多种类型，所以，我们利用 `ADT` 将不同的`优惠券`分离开来：
+分析：通过上面的讨论，我们知道 「优惠券」 可能有多种类型，所以，我们利用 `ADT` 将不同的「优惠券」分离开来：
 
 ```scala
 
@@ -223,6 +223,7 @@ case class Coupon (
 sealed trait Coupon {
   val id: Long
   val baseInfo: BaseInfo
+  val status: Int
   val `type`: String
   ...
 }
@@ -231,6 +232,7 @@ case class CashCoupon (
   id: Long,
   baseInfo: BaseInfo,
   `type`: String = Coupon.Type.CashType,
+  status: Int,
   leastCost: Long,
   reduceCost: Long,
   ...
@@ -240,6 +242,7 @@ case class DiscountCoupon (
   id: Long,
   baseInfo: BaseInfo,
   `type`: String = Coupon.Type.DiscountType,
+  status: Int,
   discount: Int,
   ...
 ) extends Coupon
@@ -248,25 +251,27 @@ case class GiftCoupon (
   id: Long,
   baseInfo: BaseInfo,
   `type`: String = Coupon.Type.GiftType,
+  status: Int,
   gift: String,
   ...
 ) extends Coupon
 ```
 
-同过合理地利用 `ADT` 我们使每一种 `优惠券` 的结构更加清晰，同时也减少了字段的冗余。并且，如果在业务后期我们还要增加别的 `优惠券`类型，我们不用修改原来的结构，只需要再重新创建一个新的 `case class` 就可以了：
+同过合理地利用 `ADT` 我们使每一种「优惠券」的结构更加清晰，同时也减少了字段的冗余。并且，如果在业务后期我们还要增加别的 「优惠券」类型，我们不用修改原来的结构，只需要再重新创建一个新的 `case class` 就可以了：
 
-比如我们在后期增加了一种叫 `团购券` 的优惠券，我们不需要修改原来定义的结构，直接：
+比如我们在后期增加了一种叫 「团购券」 的优惠券，我们不需要修改原来定义的结构，直接：
 
 ```scala
 case class GroupCoupon (
   id: Long,
    baseInfo: BaseInfo,
    `type`: String,
+   status: Int,
    dealDetail: String
 )
 ```
 
-并且在利用`模式匹配`的时候，我们可以像操作代数那样：
+并且在利用「模式匹配」的时候，我们可以像操作代数那样：
 
 ```scala
 coupon match {
@@ -286,84 +291,119 @@ coupon.`type` match {
 }
 ```
 
-可以看到，利用 `ADT` 重新组织之后的数据结构在使用`模式匹配`的时候更加清晰，在功能上也更加强大。
+通过本例，我们可以看到，利用 `ADT` 重新组织之后的数据结构减少了数据的冗余，并且在使用「模式匹配」的时候更加清晰，在功能上也更加强大。
 
 #### 场景二
 
-我们在前面创建了一系列优惠券，现在我们要在某些场景下使用这些`优惠券`，比如我们要在某个`商城`里面使用这些`优惠券`，为了方便叙述，假设我们的`商城`只支持`折扣券`。
+针对上面的优惠券，用户在使用这些优惠券的时候，优惠券会存在不同的几种状态：
 
-我们先完善一下之前创建的`折扣券的信息`：
+1. 未领取
+
+2. 已领取但暂未使用
+
+3. 已使用
+
+4. 无效优惠券
+
+我们现在想要根据这几种不同的状态渲染出不同的结果页面，要得到这几种状态，我们通常会：
 
 ```scala
-case class DiscountCoupon (
-  id: Long,
-  baseInfo: BaseInfo,
-  `type`: String = Coupon.Type.DiscountType,
-  discount: Int,
-  color: String,
-  ...
-)
+def fetched(c: Coupon, user: User) = {
+  //根据coupon信息以及user信息去查询用户是否已经领取了这张优惠券
+  ???
+}
+
+def used(c: Coupon, user: User) = {
+  //根据coupon信息以及user信息去查询用户是否已经使用了这张优惠券
+  ???
+}
+
+def isAviable(c: Coupon) = {
+  //根据优惠券信息来判断优惠券是否已经失效
+  ???
+}
 ```
-
-由于一个商城可能会支持很多种优惠，不只是`优惠券`提供的优惠，也可能支持`会员卡`等其他的优惠，所以这里我们建立一个描述折扣信息的结构：
+我们先定义一个获取优惠券状态的方法
 
 ```scala
-sealed trait DiscountInfo {
-  val base: ShopBase //折扣的基本信息
+def f(c: coupon, user) = {
+  if (isAviable(coupon)) {
+    if (used(coupon, user)) {
+      //已使用的优惠券
+      ???
+    } else {
+      if (fetched(coupon, user)) {
+        //已领取但未使用的优惠券
+        ???
+      } else {
+        //未领取的优惠券
+        ???
+      }
+    }
+  } else {
+    //已失效的优惠券
+    ???
+  }
 }
 ```
 
-前面提到我们的`商城`中可能有多种不同的优惠信息，再结合`场景一`中的例子，我们很容易构造出：
+上面的代码能够完成我们的需求，但是，当优惠券的状态变多的时候，该方法传入的参数也会有所变化，「if-else」语句层级也会越多，非常容易出错，同时代码表达的意思也没那么明确，可读性极查。
+
+所以我们能否重新组织一下数据结构，使之能够利用「模式匹配」？
+
+##### 利用 `ADT` 重新组织：
+
+分析：我们在使用优惠券的时候无非就是判断这几种「状态」，那我们就利用 `ADT` 将这些状态抽象化：
 
 ```scala
-// 优惠券折扣信息
+sealed trait CouponStatus {
 
-case class CouponDiscountInfo (
-  base: ShopBase,
-    ...
-) extends DiscountInfo
+  //每种状态共用的一些信息
+  val base: CouponStatusBase
+}
 
-// 会员卡折扣信息
-
-case class CardDiscouponInfo (
-  base: ShopBase,
-    ...
-) extends DiscountInfo
-```
-我们已经大致构造出了我们所需要的结构，结构中具体的字段要根据需求来定。
-
-那么我们现在给出对于使用 `CouponDiscountInfo` 的需求：
-
-1. 我们将使用`折扣券`的`折扣`来计算商品最终的价格
-
-2. 我们将使用`折扣券`的`颜色`来渲染页面
-
-通过以上需求，我们很容易构造出：
-
-```scala
-case class CouponDiscountInfo (
-  base: ShopBase,
-  discount: Int,
-  color: String
-) extends DiscountInfo
-```
-
-上面的结构能够满足我们的需求，但是，如果后期我们还要使用`折扣券`中的其他信息，比如我们要使用 `baseInfo`，那岂不是又要在上面的结构中添加一个新的字段？所以我们可以在一开始构造的时候就把整个`折扣券`的信息全部放进去：
-
-```scala
-case class CouponDiscountInfo (
-  base: ShopBase,
-  coupon: DiscountCoupon
+case class CouponStatusBase (
+  coupon: Coupon,
+  ...
 )
+
+//未领取
+case class NotFetchStatus (
+  base: CouponStatusBase
+) extends CouponStatus
+
+//已领取但未使用
+case class FetchedStatus (
+  base: CouponStatusBase,
+  user: User
+) extends CouponStatus
+
+//已使用
+case class UsedStatus (
+  base: CouponStatusBase,
+  user: User
+) extends CouponStatus
+
+//无效优惠券
+case class UnAvilable (
+  base: CouponStatusBase
+) extends CouponStatus
 ```
-这样我们可以在后续使用`折扣券`中的任意信息，通过这种方式，可以使我们所需要的信息更加完备，对于`会员卡`，我们也像这样去组织：
+
+我们利用 `ADT` 将「状态」抽象化了，并且将每种「状态」所需要使用到的数据全部构造在了一起，那现在我们再根据不同的「状态」去渲染页面就变成了：
 
 ```scala
-case class CardDiscountInfo (
-  base: ShopBase,
-  card: Card
-)
+def f(status: CouponStatus) = status match {
+  case NotFetchStatus(base) => ???
+  case FetchedStatus(base, user) => ???
+  case UsedStatus(base, user) => ???
+  case UnAvilable(base) => ???
+}
 ```
+
+可以看到通过用 `ADT` 抽象之后的数据结构在「模式匹配」的时候非常清晰，并且我们将不同状态下所需要的数据全部构造在了一起，也使得我们在模式匹配之后可以直接利用 `status` 去使用这些数据，不用再通过方法去获取了。
+
+通过本例，我们可以发现，通过 `ADT` 可以将数据`高度抽像`，使得数据的「具体信息」变得简洁，同时「概括能力」变得更强，数据更加「完备」。
 
 ## 延伸阅读
 
