@@ -2,7 +2,7 @@
 title: 如何利用 ADT 良好地组织业务
 ---
 
-在用 `Scala` 做业务开发的时候，我们大都会用到 `case class` 以及「模式匹配」，本文将介绍如何利用 `case class` 模拟 `ADT` 并在日常开发中利用 `ADT` 良好地组织业务。
+在用 `Scala` 做业务开发的时候，我们大都会用到 `case class` 以及「模式匹配」，本文将介绍在日常开发中如何利用 `case class` 模拟 `ADT` 去良好地组织业务。
 
 ## ADT（代数数据类型）
 
@@ -14,15 +14,15 @@ title: 如何利用 ADT 良好地组织业务
 
 在介绍两种常见代数类型之前我们先介绍一下 「计数」 的概念，方面理解后面所要介绍的内容。
 
-为了将某个类型与我们熟悉的数字代数相关联，我们可以计算该类型有多少种取值，例如 `Bool` 类型：
+为了将某个类型与我们熟悉的数字代数相关联，我们可以计算该类型有多少种取值，例如 `Haskell`中的`Bool` 类型：
 
-```
+```haskell
 data Bool = true | false
 ```
 
 可以看到 `Bool` 类型有两种可能的取值，要么是 `false`, 要么是 `true`, 所以这里我们暂时将数字 `2` 与 `Bool` 类型相关联。
 
-如果 `Bool` 类型是 `2`，那么何种类型是 `1` 呢，在 `Scala` 中 `Unit` 类型只有一种取值：
+如果 `Bool` 类型关联的是 `2`，那么何种类型是 `1` 呢，在 `Scala` 中 `Unit` 类型只有一种取值：
 
 ```scala
 scala> val a = ()
@@ -71,7 +71,7 @@ b match {
 
 `sum` 可以理解为是一种 `alternation`（选择），可以通过我们熟悉的 `+` 操作来产生，对应的类型为：
 
-```
+```haskell
 data Add a b = AddL a | AddR b
 ```
 
@@ -79,9 +79,9 @@ data Add a b = AddL a | AddR b
 
 注意这里是 `a` 或者 `b`，不同于上面介绍的 `*`。
 
-这里可能就会有疑惑了，为什么 `+` 是 「或者」 呢，我们依然通过前面介绍的 「计数」 的概念来理解：
+这里可能就会有疑惑了，为什么 `+` 操作对应的语义是「或者」 呢，我们依然通过前面介绍的 「计数」 的概念来理解：
 
-在 `Scala` 中 `Option` 就是一种 `sum` 类型，eg：
+在 `Scala` 中 `Option` 就是一种 `sum` 类型，例如：
 
 ```scala
 scala> val c = Option(false)
@@ -108,7 +108,7 @@ c match {
 
 ## 在业务中使用 ADT
 
-我们在利用 `Scala` 的 `case class` 组织业务的时候其实就已经用到了 `ADT`，eg：
+我们在利用 `Scala` 的 `case class` 组织业务的时候其实就已经用到了 `ADT`，例如：
 
 ```scala
 sealed trait Tree
@@ -380,7 +380,7 @@ case class CouponStatusBase (
 )
 
 //未领取
-case class StatusNotFetch (
+case class StatusNotFetched (
   base: CouponStatusBase
 ) extends CouponStatus
 
@@ -401,18 +401,18 @@ case class StatusExpired (
   base: CouponStatusBase
 ) extends CouponStatus
 
-case object UnAvilable extends CouponStatus
+case object StatusUnAvilable extends CouponStatus
 ```
 
 我们利用 `ADT` 将「状态」抽象化了，并且将每种「状态」所需要使用到的数据全部构造在了一起，那现在我们再根据不同的「状态」去渲染页面就变成了：
 
 ```scala
 def f(status: CouponStatus) = status match {
-  case StatusNotFetch(base) => ???
+  case StatusNotFetched(base) => ???
   case StatusFetched(base, user) => ???
   case StatusUsed(base, user) => ???
   case StatusExpired(base) => ???
-  case UnAvilable => ???
+  case StatusUnAvilable => ???
 }
 ```
 
