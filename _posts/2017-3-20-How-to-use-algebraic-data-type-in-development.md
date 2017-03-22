@@ -303,7 +303,9 @@ coupon.`type` match {
 
 3. 已使用
 
-4. 无效优惠券
+4. 过期优惠券
+
+5. 无效优惠券
 
 我们现在想要根据这几种不同的状态渲染出不同的结果页面，要得到这几种状态，我们通常会：
 
@@ -318,28 +320,37 @@ def used(c: Coupon, user: User) = {
   ???
 }
 
+def isExpired(c: Coupon) = {
+  //根据优惠券信息来判断优惠券是否已经过期
+  ???
+}
+
 def isAviable(c: Coupon) = {
   //根据优惠券信息来判断优惠券是否已经失效
   ???
 }
 ```
-
 我们现在就利用这些状态去渲染页面：
 
 ```scala
-def f(c: coupon, user: User) = {
-  if (isAviable(coupon)) {
-    if (used(coupon, user)) {
-      //已使用的优惠券
-      ???
-    } else {
-      if (fetched(coupon, user)) {
-        //已领取但未使用的优惠券
+def f(c: Coupon, user: User) = {
+  if (!isAviable(coupon)) {
+    if (!isExpired(coupon)) {
+      if (used(coupon, user)) {
+        //已使用的优惠券
         ???
       } else {
-        //未领取的优惠券
-        ???
+        if (fetched(coupon, user)) {
+          //已领取但未使用的优惠券
+          ???
+        } else {
+          //未领取的优惠券
+          ???
+        }
       }
+    } else {
+      //已过期的优惠券
+      ???
     }
   } else {
     //已失效的优惠券
@@ -348,7 +359,7 @@ def f(c: coupon, user: User) = {
 }
 ```
 
-上面的代码能够完成我们的需求，但是，当优惠券的状态变多的时候，该方法传入的参数也会有所变化，「if-else」语句层级也会越多，非常容易出错，同时代码表达的意思也没那么明确，可读性极查。
+上面的代码能够完成我们的需求，但是，当优惠券的状态变多的时候，该方法传入的参数也会有所变化，「if-else」语句层级也会越多，非常容易出错，同时代码表达的意思也没那么明确，可读性极差。
 
 所以我们能否重新组织一下数据结构，使之能够利用「模式匹配」？
 
@@ -369,42 +380,45 @@ case class CouponStatusBase (
 )
 
 //未领取
-case class NotFetchStatus (
+case class StatusNotFetch (
   base: CouponStatusBase
 ) extends CouponStatus
 
 //已领取但未使用
-case class FetchedStatus (
+case class StatusFetched (
   base: CouponStatusBase,
   user: User
 ) extends CouponStatus
 
 //已使用
-case class UsedStatus (
+case class StatusUsed (
   base: CouponStatusBase,
   user: User
 ) extends CouponStatus
 
-//无效优惠券
-case class UnAvilable (
+//过期优惠券
+case class StatusExpired (
   base: CouponStatusBase
 ) extends CouponStatus
+
+case object UnAvilable extends CouponStatus
 ```
 
 我们利用 `ADT` 将「状态」抽象化了，并且将每种「状态」所需要使用到的数据全部构造在了一起，那现在我们再根据不同的「状态」去渲染页面就变成了：
 
 ```scala
 def f(status: CouponStatus) = status match {
-  case NotFetchStatus(base) => ???
-  case FetchedStatus(base, user) => ???
-  case UsedStatus(base, user) => ???
-  case UnAvilable(base) => ???
+  case StatusNotFetch(base) => ???
+  case StatusFetched(base, user) => ???
+  case StatusUsed(base, user) => ???
+  case StatusExpired(base) => ???
+  case UnAvilable => ???
 }
 ```
 
 可以看到通过用 `ADT` 抽象之后的数据结构在「模式匹配」的时候非常清晰，并且我们将不同状态下所需要的数据全部构造在了一起，也使得我们在模式匹配之后可以直接利用 `status` 去使用这些数据，不用再通过方法去获取了。
 
-通过本例，我们可以发现，通过 `ADT` 可以将数据`高度抽像`，使得数据的「具体信息」变得简洁，同时「概括能力」变得更强，数据更加「完备」。
+通过本例，我们可以发现，通过 `ADT` 可以将数据「高度抽象」，使得数据的「具体信息」变得简洁，同时「概括能力」变得更强，数据更加「完备」。
 
 ## 延伸阅读
 
