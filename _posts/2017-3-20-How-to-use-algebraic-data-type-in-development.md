@@ -45,8 +45,7 @@ data Mul a b = Mul a b
 在 `Scala`中，`tuples`（元组）就是这样的，例如：
 
 ```scala
-scala> val b = (Boolean, Boolean)
-b: (Boolean.type, Boolean.type) = (object scala.Boolean,object scala.Boolean)
+scala> val b:(Boolean, Boolean) = ???
 ```
 我们定义的元组 `b` 就是两个 `Boolean` 类型的组合，也就是说，元组 `b` 是同时拥有两个 `Boolean` 类型的容器，可以通过我们前面介绍的 「计数」 的概念来理解：
 
