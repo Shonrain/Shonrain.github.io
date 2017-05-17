@@ -1,8 +1,8 @@
 ---
-title: 如何在 Scala 中科学地操作 collection（二）：不可变集合性能的比较
+title: 如何在 Scala 中科学地操作 collection（二）：集合性能比较
 ---
 
-在平时使用集合的时候，我们经常会选择 `Scala` 中通用的集合，例如：`Seq`、`Map`、`List`等等，有的时候选择「通用集合」完全可以解决问题，但是当集合操作变得很复杂以至于涉及到「性能问题」的时候，采用「通用集合」可能并不是一个好的选择。在不同的场景下选择合适的集合可以使我们对于集合的操作更加高效。
+在平时使用集合的时候，我们经常会选择 Scala 中通用的集合，例如：`Seq`、`Map`、`List`等等，有的时候选择「通用集合」完全可以解决问题，但是当集合操作变得很复杂以至于涉及到「性能问题」的时候，采用「通用集合」可能并不是一个好的选择。在不同的场景下选择合适的集合可以使我们对于集合的操作更加高效。
 
 大部分情况下，我们都会优先采用「不可变集合」，所以本文将通过比较几种常见的「不可变集合」来阐述各个集合之间的性能差异。
 
@@ -17,7 +17,6 @@ title: 如何在 Scala 中科学地操作 collection（二）：不可变集合�
 `TreeSet` 是用「红黑树」来实现的，「红黑树」是一种相对平衡的二叉查找树，它可以在 `O(log2 n)` 时间复杂度内做查找，例如：
 
 ```scala
-
 val s = scala.collection.immutable.TreeSet(1, 2, 4, 5, 7, 8, 11, 14, 15)
 s: scala.collection.immutable.TreeSet[Int] = TreeSet(1, 2, 4, 5, 7, 8, 11, 14, 15)
 ```
@@ -96,7 +95,7 @@ s: scala.collection.immutable.HashSet[Int] = Set(1, 33, 1057, 289, 3, 35, 50, 30
 
 ### HashMap、TreeMap
 
-`HashMap` 与我们前面提到的 `HashSet` 结构类似，同样，`TreeMap` 与 `TreeSet` 结构类似，一般情况下，优先选择 `HashSet`。
+`HashMap` 与我们前面提到的 `HashSet` 结构类似，同样，`TreeMap` 与 `TreeSet` 结构类似，一般情况下，优先选择 `HashMap`。
 
 ### ListMap
 
