@@ -8,7 +8,7 @@ Play! 是一种高效率的 Java 和 Scala Web 应用程序框架，它能够用
 
 ![Image of play](../assets/img/architecture-of-the-play.png)
 
-Play! 抛弃了传统的 Java Web 框架的模式，而是选择拥抱「响应式」（Reactive）应用的理念，从头开始设计，这使得 Play! 可以够构建出即使在高负载下也能够对用户行为进行实时响应的 Web 应用。 Play! 作为一个全栈响「应式框架」主要有如下特点：
+Play! 抛弃了传统的 Java Web 框架的模式，而是选择拥抱「响应式」（Reactive）应用的理念，从头开始设计，这使得 Play! 可以够构建出即使在高负载下也能够对用户行为进行实时响应的 Web 应用。 Play! 作为一个全栈「响应式框架」主要有如下特点：
 
 1. 响应式（Responsive）—— 在用户层面，Play! 能够快速响应用户的行为
 
@@ -82,7 +82,7 @@ Play! 框架抛弃了 Servlet/JSP 里 Session 等概念，内置没有提供方�
 
 ![Image of play and java layer](../assets/img/play-java-layer.png)
 
-通过上图可以对比一下 Play! 与传统的 Java EE 框架的区别，可以看到 Play! 在架构上更加清晰简洁。在 Play! 之前， 相比于 风格的框架，传统的 Java Web 框架在开发网页应用的时候往往耗时比较长，原因主要有两个：
+通过上图可以对比一下 Play! 与传统的 Java EE 框架的区别，可以看到 Play! 在架构上更加清晰简洁。在 Play! 之前， 相比于 ROR 风格的框架，传统的 Java Web 框架在开发网页应用的时候往往耗时比较长，原因主要有两个：
 
 1、依赖 Servlet
 
