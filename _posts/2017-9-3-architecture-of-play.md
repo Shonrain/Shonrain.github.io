@@ -1,5 +1,5 @@
 ---
-title: Play! Framework 系列（二）：play 的基本结构
+title: Play! Framework 系列（二）：play 的项目结构
 ---
 
 在 [Play! Framework 系列（一）](http://shawdubie.com/notes/first-glance-at-play)中我们初步了解了一下 Play! 的各种特性以及优势，那么从现在开始我们将正式接触 Play!。本文将介绍一下 Play! 的整体结构，然后通过一个非常简单的例子来阐述各个结构之间的关系以及如何利用 Play! 约定的结构去合理地组织我们的业务逻辑。
@@ -20,6 +20,7 @@ title: Play! Framework 系列（二）：play 的基本结构
 可以看到，我们将要实现的 Web 应用非常简单，接下来我们就通过这个小小的需求去把玩一下 Play! 吧。
 
 ## app
+
 ```
 app
  └ controllers
@@ -139,6 +140,16 @@ class EmployeeController @Inject() (
 }
 ```
 
+这里我们简单介绍一下 Play 中的 「Action」，Play 中的 「Action」 实际上是一个「特质（trait）」(https://www.playframework.com/documentation/2.5.x/api/scala/index.html#play.api.mvc.Action)，我们上面的代码实现了一个 「Action」， 这里实际上是使用了 [object Action](https://www.playframework.com/documentation/2.5.x/api/scala/index.html#play.api.mvc.Action$)，然后 「object Action」 中的 「apply」 方法会返回一个 Action：
+
+
+```scala
+
+// object Action 的 apply 方法
+
+final def apply(block: ⇒ Result): Action[AnyContent]
+```
+
 ## conf
 
 ```
@@ -147,6 +158,7 @@ conf
  └ application.conf
  └ routes
 ```
+
 
 在 conf 下面，我们主要放置整个项目的配置文件和路由文件。
 
@@ -169,6 +181,26 @@ GET    /employee/employee-list    controllers.EmployeeController.employeeList
 
 ![Image of employee-list](../assets/img/employee-list.png)
 
+关于 routes，我们在 route 文件中只是写了这么一段去指定，当编译完成之后，我们在 `target/scala-2.12/routes/main/router/` 下可以看到一个名为 Route.scala 的文件，在文件的末尾可以看到：
+
+```scala
+
+def routes: PartialFunction[RequestHeader, Handler] = {
+
+    case controllers_EmployeeController_employeeList0_route(params) =>
+      call {
+        controllers_EmployeeController_employeeList0_invoker.call(EmployeeController_0.employeeList)
+      }
+  }
+```
+
+可见其实 routes 在 play! 中的实现是一个方法，它是一个「偏函数」当某个请求被匹配到了就调用相应的方法，如果没有匹配到则报错，所以我们也可以自己实现某个路由，而不用 play! 的这种方式，当然用 play! 约定好会更加清晰和简单。
+
+在介绍完 routes 之后，我们有必要知道一下当我们在浏览器中输入某个链接的时候，play! 的各个模块之间是如何调用的，如下图：
+
+![Image of play-mvc](../assets/img/play-mvc.png)
+
+当我们访问某个链接的时候，该链接就是对应的一个路由，该路由会去匹配某个 Controller 中的 Action，接下来 Action 要去调用所依赖的 Service 中的方法，这些方法将数据获取到传递给 Action，然后 Action 将这些数据送给 View，View 就会将我们所需要的页面渲染出来了。这个流程如图中的实线所示，同时 Controller 也会依赖 Model，有时候 View 也会去依赖 Model 以及 Service。
 
 ## build.sbt
 
@@ -200,7 +232,7 @@ project
  └ plugins.sbt
 ```
 
-sbt 在构建应用时所需要的依赖以及信息大部分都定义在了前面介绍的 build.sbt 文件中，但是如果将所有的信息全部放在 build.sbt 下面则不方便管理。所以在 play! 中我们可以将一些特定的依赖以及信息定义在 project 下面。
+该目录下主要放置 sbt 构建之后的文件，在构建之前，该目录下一般就只有上面所列的两个文件。
 
 ### build.properties
 
