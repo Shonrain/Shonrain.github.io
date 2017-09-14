@@ -4,7 +4,7 @@ title:  <译> 响应式 Web 应用（二）
 
 ## 原书
 
-[https://www.manning.com/books/reactive-web-applications](https://www.manning.com/books/reactive-web-applications)
+[上一篇](http://shawdubie.com/notes/reactive-web-applications-1)
 
 ## 1.1.3 响应式编程
 
