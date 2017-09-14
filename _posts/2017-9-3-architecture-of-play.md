@@ -140,7 +140,7 @@ class EmployeeController @Inject() (
 }
 ```
 
-这里我们简单介绍一下 Play 中的 「Action」，Play 中的 「Action」 实际上是一个「特质（trait）」(https://www.playframework.com/documentation/2.5.x/api/scala/index.html#play.api.mvc.Action)，我们上面的代码实现了一个 「Action」， 这里实际上是使用了 [object Action](https://www.playframework.com/documentation/2.5.x/api/scala/index.html#play.api.mvc.Action$)，然后 「object Action」 中的 「apply」 方法会返回一个 Action：
+这里我们简单介绍一下 Play 中的 [「Action」，Play 中的 「Action」 实际上是一个「特质（trait）」](https://www.playframework.com/documentation/2.5.x/api/scala/index.html#play.api.mvc.Action)，我们上面的代码实现了一个 「Action」， 这里实际上是使用了 [object Action](https://www.playframework.com/documentation/2.5.x/api/scala/index.html#play.api.mvc.Action$)，然后 「object Action」 中的 「apply」 方法会返回一个 Action：
 
 
 ```scala
