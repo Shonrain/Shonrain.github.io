@@ -2,9 +2,9 @@
 title:  <译> 响应式 Web 应用（三）
 ---
 
-## 原书
+## 上一篇
 
-[上一篇](http://shawdubie.com/notes/reactive-web-applications-2)
+[<译> 响应式 Web 应用（二）](http://shawdubie.com/notes/reactive-web-applications-2)
 
 ## 1.2 重新思考对计算机资源的利用
 
