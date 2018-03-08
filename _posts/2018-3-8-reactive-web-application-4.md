@@ -4,7 +4,7 @@ title:  <译> 响应式 Web 应用（四）
 
 ## 上一篇
 
-[<译> 响应式 Web 应用（三）](http://shawdubie.com/notes/reactive-web-applications-3)
+[响应式 Web 应用（三）](http://shawdubie.com/notes/reactive-web-applications-3)
 
 ## 1.2.2 开发适合多核架构的 web 应用程序
 
@@ -49,7 +49,7 @@ final int theAnswer = 42
 val a = List(1, 2, 3)
 ```
 
-相反，Java 在其集合库中却没有提供库不可变的数据结构，你必须使用第三方库，比如 Google 的 [Guava]((https:// github.com/google/guava) 来得到一组有用的不可变数据结构。
+相反，Java 在其集合库中却没有提供库不可变的数据结构，你必须使用第三方库，比如 Google 的 [Guava](https:// github.com/google/guava) 来得到一组有用的不可变数据结构。
 
 #### 关于 Scala
 
