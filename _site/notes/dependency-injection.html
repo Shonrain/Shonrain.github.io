@@ -1,128 +1,112 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Play! Framework 系列（四）：依赖注入</title><meta name="twitter:card" content="summary" /><meta name="twitter:site" content="@HeiswayiNrird" /><meta name="twitter:title" content="Play! Framework 系列（四）：依赖注入" /><meta name="twitter:description" content="在Play! Framework 系列（三）中我们简单介绍了一下 Play 框架自身支持的两种依赖注入（运行时依赖注入、编译时依赖注入）。相信大家对 Play! 的依赖注入应该有所了解了。本文将详细地介绍一些在日常开发中所采用的依赖注入的方式，以供大家进行合理地选择。"><meta name="description" content="在Play! Framework 系列（三）中我们简单介绍了一下 Play 框架自身支持的两种依赖注入（运行时依赖注入、编译时依赖注入）。相信大家对 Play! 的依赖注入应该有所了解了。本文将详细地介绍一些在日常开发中所采用的依赖注入的方式，以供大家进行合理地选择。"> <script> var _hmt = _hmt || []; (function() { var hm = document.createElement("script"); hm.src = "https://hm.baidu.com/hm.js?2db4617ae1e0a3147b448ffe9d4a4c26"; var s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm, s); })(); </script><link rel="icon" href="/assets/favicon.png"><link rel="apple-touch-icon" href="/assets/touch-icon.png"><style> /* latin-ext */ @font-face { font-family: 'Karla'; font-style: normal; font-weight: 400; src: local('Karla'), local('Karla-Regular'), url(https://fonts.gstatic.com/s/karla/v5/S1bXQ0LrY7AzefpgNae9sYDGDUGfDkXyfkzVDelzfFk.woff2) format('woff2'); unicode-range: U+0100-024F, U+1E00-1EFF, U+20A0-20AB, U+20AD-20CF, U+2C60-2C7F, U+A720-A7FF; } /* latin */ @font-face { font-family: 'Karla'; font-style: normal; font-weight: 400; src: local('Karla'), local('Karla-Regular'), url(https://fonts.gstatic.com/s/karla/v5/JaMH4jmmzP070-OYo03anaCWcynf_cDxXwCLxiixG1c.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215; }</style><link rel="stylesheet" href="/assets/core.css"><link rel="canonical" href="/notes/dependency-injection"><link rel="alternate" type="application/atom+xml" title="ShawDubie" href="/feed.xml" /> <!-- 多说公共JS代码 start (一个网页只需插入一次) --> <script type="text/javascript"> var duoshuoQuery = {short_name:"shawdubie"}; (function() { var ds = document.createElement('script'); ds.type = 'text/javascript';ds.async = true; ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js'; ds.charset = 'UTF-8'; (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ds); })(); </script> <!-- 多说公共JS代码 end --></head><body><aside class="logo"> <a href="/"> <img src="../assets/img/shaw.jpeg" class="gravatar"> </a> <span class="logo-prompt">Back to Home</span></aside><main> <noscript><style> article .footnotes { display: block; }</style></noscript><article><div class="center"><h1>Play! Framework 系列（四）：依赖注入</h1><time>April 1, 2018</time></div><div class="divider"></div><p>在<a href="http://shawdubie.com/notes/dependency-injection">Play! Framework 系列（三）</a>中我们简单介绍了一下 Play 框架自身支持的两种依赖注入（运行时依赖注入、编译时依赖注入）。相信大家对 Play! 的依赖注入应该有所了解了。本文将详细地介绍一些在日常开发中所采用的依赖注入的方式，以供大家进行合理地选择。</p><h2 id="guice-和-手动注入">Guice 和 手动注入</h2><p>在<a href="http://shawdubie.com/notes/dependency-injection">上一篇</a>文章中我们所介绍的「运行时依赖注入」以及「编译时依赖注入」就是用的 Guice 以及手动注入，在这里就不作详细介绍了，大家可以去看看上篇文章以及相应的 <a href="https://github.com/Shonrain/Play-Demo/tree/master/play-demo-2">Demo</a></p><p>接下来我们介绍比较常用的依赖注入模式。</p><h2 id="cake-pattern蛋糕模式">cake pattern（蛋糕模式）</h2><p>我们首先介绍一下 Scala 中比较经典的一种依赖注入的模式—— cake pattern（也叫“蛋糕模式”），“蛋糕模式”也属于「编译时依赖注入」的一种，她不需要依赖 DI 框架。那 “蛋糕模式” 是如何实现的呢？我们知道，在 Scala 中，多个 trait（特质）能够 “混入” 到 class 中，这样在某个 class 中我们就能够得到所有 trait 中定义的东西了。“蛋糕模式”就是基于此种特性而实现的。</p><p>接下来我们就通过一个例子来了解一下“蛋糕模式”：</p><p>我们需要在页面上显示一个包含所有会员信息的会员列表，需要显示的内容有：</p><ol><li>会员信息</li><li>会员卡的信息</li></ol><p>需求很简单，接下来我来用代码组织一下业务：</p><p>我们需要从数据库中查询「会员卡」以及「会员」的信息，所以这里我们首先定义一个数据库连接的类：DatabaseAccessService 来对相应的数据库进行操作：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">trait</span> <span class="nc">DatabaseAccessServiceComp</span> <span class="o">{</span>
-  <span class="k">val</span> <span class="n">databaseAccessService</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">DatabaseAccessService</span><span class="o">()</span>
-<span class="o">}</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Play! Framework 系列（三）：依赖注入</title><meta name="twitter:card" content="summary" /><meta name="twitter:site" content="@HeiswayiNrird" /><meta name="twitter:title" content="Play! Framework 系列（三）：依赖注入" /><meta name="twitter:description" content="在Play! Framework 系列（二）中我们介绍了 Play 的项目结构。在日常处理业务逻辑的时候，我们都会用到依赖注入，本文将介绍一下 Play! 中的依赖注入以及如何合理地去使用她。"><meta name="description" content="在Play! Framework 系列（二）中我们介绍了 Play 的项目结构。在日常处理业务逻辑的时候，我们都会用到依赖注入，本文将介绍一下 Play! 中的依赖注入以及如何合理地去使用她。"> <script> var _hmt = _hmt || []; (function() { var hm = document.createElement("script"); hm.src = "https://hm.baidu.com/hm.js?2db4617ae1e0a3147b448ffe9d4a4c26"; var s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm, s); })(); </script><link rel="icon" href="/assets/favicon.png"><link rel="apple-touch-icon" href="/assets/touch-icon.png"><style> /* latin-ext */ @font-face { font-family: 'Karla'; font-style: normal; font-weight: 400; src: local('Karla'), local('Karla-Regular'), url(https://fonts.gstatic.com/s/karla/v5/S1bXQ0LrY7AzefpgNae9sYDGDUGfDkXyfkzVDelzfFk.woff2) format('woff2'); unicode-range: U+0100-024F, U+1E00-1EFF, U+20A0-20AB, U+20AD-20CF, U+2C60-2C7F, U+A720-A7FF; } /* latin */ @font-face { font-family: 'Karla'; font-style: normal; font-weight: 400; src: local('Karla'), local('Karla-Regular'), url(https://fonts.gstatic.com/s/karla/v5/JaMH4jmmzP070-OYo03anaCWcynf_cDxXwCLxiixG1c.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215; }</style><link rel="stylesheet" href="/assets/core.css"><link rel="canonical" href="/notes/dependency-injection"><link rel="alternate" type="application/atom+xml" title="ShawDubie" href="/feed.xml" /> <!-- 多说公共JS代码 start (一个网页只需插入一次) --> <script type="text/javascript"> var duoshuoQuery = {short_name:"shawdubie"}; (function() { var ds = document.createElement('script'); ds.type = 'text/javascript';ds.async = true; ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js'; ds.charset = 'UTF-8'; (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ds); })(); </script> <!-- 多说公共JS代码 end --></head><body><aside class="logo"> <a href="/"> <img src="../assets/img/shaw.jpeg" class="gravatar"> </a> <span class="logo-prompt">Back to Home</span></aside><main> <noscript><style> article .footnotes { display: block; }</style></noscript><article><div class="center"><h1>Play! Framework 系列（三）：依赖注入</h1><time>November 15, 2017</time></div><div class="divider"></div><p>在<a href="http://shawdubie.com/notes/architecture-of-play">Play! Framework 系列（二）</a>中我们介绍了 Play 的项目结构。在日常处理业务逻辑的时候，我们都会用到依赖注入，本文将介绍一下 Play! 中的依赖注入以及如何合理地去使用她。</p><h2 id="为什么要使用依赖注入">为什么要使用「依赖注入」</h2><p>在许多 Java 框架中，「依赖注入」早已不是一个陌生的技术，Play 框架从 2.4 开始推荐使用 <a href="https://github.com/google/guice">Guice</a> 来作为依赖注入。</p><p>采用依赖注入最大的好处就是为了「解耦」，举个栗子：</p><p>在<a href="http://shawdubie.com/notes/architecture-of-play">上一篇</a>文章的例子中，我们实现了一个 EmployeeService 用来对公司的员工进行操作：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">package</span> <span class="nn">services</span>
 
-<span class="k">class</span> <span class="nc">DatabaseAccessService</span><span class="o">{</span>
+<span class="k">import</span> <span class="nn">models._</span>
+
+<span class="k">class</span> <span class="nc">EmployeeSerivce</span><span class="o">{</span>
   <span class="o">...</span>
 <span class="o">}</span>
-</code></pre></div><p>大家可能会发现，在我们之前文章中的 service 中并没有定义 trait，而这里却定义了，并且在 trait 中，我们实例化了 DatabaseAccessService， 这就是“蛋糕模式”中所需要的，现在看好像并没有什么卵用，别急，等我们将所有的 service 都定义好了，她就有用了。</p><p>接下来我们定义 WxcardService 以及 WxcardMemberService：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="c1">//定义 WxcardService
-</span><span class="k">trait</span> <span class="nc">WxcardServiceComp</span> <span class="o">{</span>
-  <span class="k">this:</span> <span class="kt">DatabaseAccessServiceComp</span> <span class="o">=&gt;</span>
+</code></pre></div><p>在之前的实现中，我们没有加入数据库的操作，那么现在我们想要引入一个数据库连接的类：DatabaseAccessService 来对数据库进行连接以便我们对相应的数据库表进行操作，则：</p><p>新建一个数据库连接操作的 Service：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">package</span> <span class="nn">services</span>
 
-  <span class="k">val</span> <span class="n">wxcardService</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">WxcardService</span><span class="o">(</span><span class="n">databaseAccessService</span><span class="o">)</span>
-<span class="o">}</span>
+<span class="k">class</span> <span class="nc">DatabaseAccessService</span><span class="o">{}</span>
+</code></pre></div><p>EmployeeSerivce 需要依赖 DatabaseAccessService：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">package</span> <span class="nn">services</span>
 
-<span class="k">class</span> <span class="nc">WxcardService</span><span class="o">(</span><span class="n">databaseAccessService</span><span class="k">:</span> <span class="kt">DatabaseAccessService</span><span class="o">)</span> <span class="o">{</span>
+<span class="k">import</span> <span class="nn">models._</span>
+
+<span class="k">class</span> <span class="nc">EmployeeSerivce</span><span class="o">(</span><span class="n">db</span><span class="k">:</span> <span class="kt">DBService</span><span class="o">){</span>
   <span class="o">...</span>
 <span class="o">}</span>
+</code></pre></div><p>好了，现在我们需要在 EmployeeController 中使用 EmployeeSerivce，如果不采用依赖注入，则：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">EmployeeController</span> <span class="nd">@Inject</span><span class="o">()</span> <span class="o">(</span>
+  <span class="n">cc</span><span class="k">:</span> <span class="kt">ControllerComponents</span>
+<span class="o">)</span> <span class="k">extends</span> <span class="nc">AbstractController</span><span class="o">(</span><span class="n">cc</span><span class="o">)</span> <span class="o">{</span>
+  <span class="k">val</span> <span class="n">db</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">DatabaseAccessService</span><span class="o">()</span>
+  <span class="k">val</span> <span class="n">employeeSerivce</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">EmployeeSerivce</span><span class="o">(</span><span class="n">db</span><span class="o">)</span>
 
-<span class="c1">//定义 WxcardMembrService
-</span><span class="k">trait</span> <span class="nc">WxcardMemberServiceComp</span> <span class="o">{</span>
-  <span class="k">this:</span> <span class="kt">DatabaseAccessServiceComp</span> <span class="o">=&gt;</span>
-
-  <span class="k">val</span> <span class="n">wxcardMemberService</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">WxcardMemberService</span><span class="o">(</span><span class="n">databaseAccessService</span><span class="o">)</span>
+  <span class="k">def</span> <span class="n">employeeList</span> <span class="k">=</span> <span class="nc">Action</span> <span class="o">{</span> <span class="k">implicit</span> <span class="n">request</span><span class="k">:</span> <span class="kt">Request</span><span class="o">[</span><span class="kt">AnyContent</span><span class="o">]</span> <span class="k">=&gt;</span>
+    <span class="k">val</span> <span class="n">employees</span> <span class="k">=</span> <span class="n">employeeSerivce</span><span class="o">.</span><span class="n">getEmployees</span><span class="o">()</span>
+    <span class="nc">Ok</span><span class="o">(</span><span class="n">views</span><span class="o">.</span><span class="n">html</span><span class="o">.</span><span class="n">employeeList</span><span class="o">(</span><span class="n">employees</span><span class="o">))</span>
+  <span class="o">}</span>
 <span class="o">}</span>
+</code></pre></div><p>可以看到，为了实例化 EmployeeSerivce，DatabaseAccessService 也需要实例化，如果随着需求的增加，EmployeeSerivce 所需要依赖的东西增加，那么我们每次实例化 EmployeeSerivce 的时候都需要将她的依赖也实例化一遍，而且她的依赖也有可能会依赖其他东西，这样就使得我们的代码变得非常冗余，也极难维护。</p><p>为了解决这一问题，我们引入了依赖注入，Play支持两种方式的依赖注入，分别是：「运行时依赖注入」以及「编译时依赖注入」，接下来我们就通过这两种依赖注入来解决我们上面提出的问题。</p><h2 id="运行时依赖注入runtime-dependency">运行时依赖注入（runtime dependency）</h2><p>Play 的运行时依赖注入默认采用 <a href="https://github.com/google/guice">Guice</a>，关于 Guice，我们后面的文章当中会介绍，这里只需要知道她。为了支持 Guice 以及其他的运行时依赖注入框架，Play 提供了大量的内置组件。详见 <a href="https://www.playframework.com/documentation/2.6.x/api/scala/index.html#play.api.inject.package">play.api.inject</a>。</p><p>那么在 Play 中我们将如何使用这种依赖注入呢？回到我们文章刚开始讲的那个栗子中，现在我们通过依赖注入的方式来重新组织我们的代码：</p><p>首先 EmployeeSerivce 需要依赖 DatabaseAccessService，这里其实就存在一个「依赖注入」，那我们这样去实现：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">package</span> <span class="nn">services</span>
 
-<span class="k">class</span> <span class="nc">WxcardMemberService</span><span class="o">(</span><span class="n">databaseAccessService</span><span class="k">:</span> <span class="kt">DatabaseAccessService</span><span class="o">)</span> <span class="o">{</span>
+<span class="k">import</span> <span class="nn">models._</span>
+<span class="k">import</span> <span class="nn">javax.inject._</span>
+
+<span class="k">class</span> <span class="nc">EmployeeSerivce</span> <span class="nd">@Inject</span><span class="o">()</span> <span class="o">(</span><span class="n">db</span><span class="k">:</span> <span class="kt">DBService</span><span class="o">){</span>
   <span class="o">...</span>
 <span class="o">}</span>
-</code></pre></div><p>写法与上面定义的 DatabaseAccessService 没有什么区别，因为上面两个 service 都需要依赖 DatabaseAccessService，所以在特质中用「自身类型」来将其混入，如果需要多个依赖，可以这样写：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">this</span> <span class="nc">DatabaseAccessServiceComp</span> <span class="k">with</span> <span class="nc">BarComp</span> <span class="k">with</span> <span class="nc">FooComp</span> <span class="k">=&gt;</span>
-</code></pre></div><p>最后我们需要定义一个 WxcardController，来将数据传递到相应的页面上去：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">WxcardController</span> <span class="o">(</span>
-  <span class="n">cc</span><span class="k">:</span> <span class="kt">ControllerComponents</span><span class="o">,</span>
-  <span class="n">wxcardService</span><span class="k">:</span> <span class="kt">WxcardService</span><span class="o">,</span>
-  <span class="n">wxcardMemberService</span><span class="k">:</span> <span class="kt">WxcardMemberService</span>
-<span class="o">)</span> <span class="k">extends</span> <span class="nc">AbstractController</span><span class="o">(</span><span class="n">cc</span><span class="o">)</span> <span class="o">{...}</span>
-</code></pre></div><p>可以看到 WxcardController 需要依赖我们上面定义的一些 service，那么在蛋糕模式下，我们怎样才能将这些依赖注入到 WxcardController 中呢，由于“蛋糕模式”也是「编译时依赖注入」的一种，那么我们可以参考<a href="http://shawdubie.com/notes/dependency-injection">上一篇</a>文章中所采用的方式：</p><p>同样，我们需要实现自己的 ApplicationLoader：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="c1">//定义 load 那部分代码省略了，大家可以去看 Demo
-</span><span class="o">...</span>
-
-<span class="k">class</span> <span class="nc">MyComponents</span><span class="o">(</span><span class="n">context</span><span class="k">:</span> <span class="kt">ApplicationLoader.Context</span><span class="o">)</span>
-    <span class="k">extends</span> <span class="nc">BuiltInComponentsFromContext</span><span class="o">(</span><span class="n">context</span><span class="o">)</span>
-    <span class="k">with</span> <span class="n">play</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="nc">HttpFiltersComponents</span>
-    <span class="k">with</span> <span class="nc">DatabaseAccessServiceComp</span>
-    <span class="k">with</span> <span class="nc">WxcardServiceComp</span>
-    <span class="k">with</span> <span class="nc">WxcardMemberServiceComp</span> <span class="o">{</span>
-
-  <span class="k">lazy</span> <span class="k">val</span> <span class="n">wxcardController</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">WxcardController</span><span class="o">(</span><span class="n">controllerComponents</span><span class="o">,</span> <span class="n">wxcardService</span><span class="o">,</span> <span class="n">wxcardMemberService</span><span class="o">)</span>
-
-  <span class="k">lazy</span> <span class="k">val</span> <span class="n">router</span><span class="k">:</span> <span class="kt">Router</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Routes</span><span class="o">(</span><span class="n">httpErrorHandler</span><span class="o">,</span> <span class="n">wxcardController</span><span class="o">)</span>
+</code></pre></div><p>在上面的代码中，我们引入了 <code class="highlighter-rouge">import javax.inject._</code>，并且可以看到多了一个 <code class="highlighter-rouge">@Inject()</code> 注解，我们实现运行时依赖注入就采用该注解。</p><p>那么在 EmployeeController 中，我们的代码就变成了：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">EmployeeController</span> <span class="nd">@Inject</span><span class="o">()</span> <span class="o">(</span>
+  <span class="n">employeeSerivce</span><span class="k">:</span> <span class="kt">EmployeeSerivce</span><span class="o">,</span>
+  <span class="n">cc</span><span class="k">:</span> <span class="kt">ControllerComponents</span>
+<span class="o">)</span> <span class="k">extends</span> <span class="nc">AbstractController</span><span class="o">(</span><span class="n">cc</span><span class="o">)</span> <span class="o">{</span>
+  <span class="k">def</span> <span class="n">employeeList</span> <span class="k">=</span> <span class="nc">Action</span> <span class="o">{</span> <span class="k">implicit</span> <span class="n">request</span><span class="k">:</span> <span class="kt">Request</span><span class="o">[</span><span class="kt">AnyContent</span><span class="o">]</span> <span class="k">=&gt;</span>
+    <span class="k">val</span> <span class="n">employees</span> <span class="k">=</span> <span class="n">employeeSerivce</span><span class="o">.</span><span class="n">getEmployees</span><span class="o">()</span>
+    <span class="nc">Ok</span><span class="o">(</span><span class="n">views</span><span class="o">.</span><span class="n">html</span><span class="o">.</span><span class="n">employeeList</span><span class="o">(</span><span class="n">employees</span><span class="o">))</span>
+  <span class="o">}</span>
 <span class="o">}</span>
-</code></pre></div><p>通过上面的代码，就完成了注入，可以看到我们定义的所有 xxxServiceComp 特质都被混入到了 MyComponents 中，这样，当 Play加载时，我们所定义的 service 就都在这里被实例化了，为什么呢？因为我们在定义 xxxServiceComp 时，都会有这么一行代码：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">xxxService</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">XxxService</span><span class="o">()</span>
-</code></pre></div><p>这就是为什么我们之前要在每个 service 中都定义一个 trait，因为 Scala 中的 class 可以混入多个 trait，在这里，我们可以将所有需要的依赖都混入到 MyComponents 中，然后实现注入。</p><p>至于为什么要叫“蛋糕模式”，我个人是这么理解的： 我们定义的 xxxServiceComp 比如 WxcardServiceComp 相当于蛋糕中的某一层，而那些需要被多次依赖的 xxxServiceComp，比如上面定义的 DatabaseAccessServiceComp 可以看作是蛋糕中的调味料（比如水果，巧克力啥的），将这些蛋糕一层一层地放在一起，然后再混入一些调味料，就组成了一个大的蛋糕—— MyComponents。</p><p>可以看到“蛋糕模式”中，我们需要写非常多的样板代码，要为每个 service 都定义一个 trait，感觉心很累，那么接下来我们就介绍一种比较轻巧而又简洁的的方式。</p><h2 id="macwire">macwire</h2><p><a href="https://github.com/adamw/macwire">macwire</a> 是基于 「Scala 宏」来实现的，我们使用她可以让依赖注入变得非常简单，并且使我们的代码量减少许多。接下来，我们就通过 macwire 来实现一下上面的例子。</p><p>首先在项目中引入 macwire，在 build.sbt 文件中增加一行依赖：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">++=</span> <span class="nc">Seq</span><span class="o">(</span>
-  <span class="s">"org.scalatestplus.play"</span>   <span class="o">%%</span> <span class="s">"scalatestplus-play"</span> <span class="o">%</span> <span class="s">"3.0.0-M3"</span> <span class="o">%</span> <span class="nc">Test</span><span class="o">,</span>
+</code></pre></div><p>可以看到我们不需要再去写那么多的实例了，我们只要在需要某种依赖的地方声明一下我们需要什么样的依赖， Play 在运行时就会将我们需要的依赖注入到相应的组件中去。</p><p>tip：<code class="highlighter-rouge">@Inject</code> 必须放在类名的后面，构造参数的前面。</p><p>「运行时依赖注入」，顾名思义就是在程序运行的时候进行依赖注入，但是她不能在编译时进行校验，为了能让程序在编译时就能实现对依赖注入的校验， Play支持了「编译时依赖注入」。</p><h2 id="编译时依赖注入compile-time-dependency-injection">编译时依赖注入（compile time dependency injection）</h2><p>为了实现编译时依赖注入，我们需要知道 Play 提供的一个特质：<a href="https://www.playframework.com/documentation/2.6.x/api/scala/index.html#play.api.ApplicationLoader">ApplicationLoader</a>，该特质中的 load 方法将会在程序启动的时候加载我们的应用程序，在这个过程中，Play 框架本身以及我们自己的程序代码所依赖的东西都会被实例化。</p><p>默认情况下，Play 提供了一个 Guice 模块，该模块下的 GuiceApplicationBuilder 会根据 Play 框架给定的 context 去将该程序所依赖的所有组件联系在一起。</p><p>如果我们要自定义 ApplicationLoader，我们也需要一个像 GuiceApplicationBuilder 的东西，好在 Play 提供了这么一个东西，那就是：<a href="https://www.playframework.com/documentation/2.6.x/api/scala/index.html#play.api.ApplicationLoader$$Context">BuiltInComponentsFromContext</a>，我们可以通过继承这个类来实现我们自己的 ApplicationLoader。</p><p>接下来我们通过相应的代码来作进一步的解释：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">controllers._</span>
+<span class="k">import</span> <span class="nn">play.api._</span>
+<span class="k">import</span> <span class="nn">play.api.routing.Router</span>
+<span class="k">import</span> <span class="nn">services._</span>
+<span class="k">import</span> <span class="nn">router.Routes</span>
 
-  <span class="c1">//在这里添加 macwire 的依赖
-</span>  <span class="s">"com.softwaremill.macwire"</span> <span class="o">%%</span> <span class="s">"macros"</span>             <span class="o">%</span> <span class="s">"2.3.0"</span>    <span class="o">%</span> <span class="nc">Provided</span><span class="o">,</span>
-<span class="o">)</span>
-</code></pre></div><p>然后定义 service：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="c1">//定义 DatabaseAccessService
+
+<span class="c1">//自定义 ApplicationLoader
 </span>
-<span class="k">class</span> <span class="nc">DatabaseAccessService</span><span class="o">{</span>
-  <span class="o">...</span>
+<span class="k">class</span> <span class="nc">MyApplicationLoader</span> <span class="k">extends</span> <span class="nc">ApplicationLoader</span> <span class="o">{</span>
+  <span class="k">def</span> <span class="n">load</span><span class="o">(</span><span class="n">context</span><span class="k">:</span> <span class="kt">Context</span><span class="o">)</span><span class="k">:</span> <span class="kt">Application</span> <span class="o">=</span> <span class="o">{</span>
+    <span class="k">new</span> <span class="nc">MyComponents</span><span class="o">(</span><span class="n">context</span><span class="o">).</span><span class="n">application</span>
+  <span class="o">}</span>
 <span class="o">}</span>
 
-<span class="c1">//定义 WxcardService
-</span>
-<span class="k">class</span> <span class="nc">WxcardService</span><span class="o">(</span><span class="n">databaseAccessService</span><span class="k">:</span> <span class="kt">DatabaseAccessService</span><span class="o">)</span> <span class="o">{</span>
-  <span class="o">...</span>
-<span class="o">}</span>
-
-<span class="c1">//定义 WxcardMembrService
-</span>
-<span class="k">class</span> <span class="nc">WxcardMemberService</span><span class="o">(</span><span class="n">databaseAccessService</span><span class="k">:</span> <span class="kt">DatabaseAccessService</span><span class="o">)</span> <span class="o">{</span>
-  <span class="o">...</span>
-<span class="o">}</span>
-</code></pre></div><p>可以看到，我们现在就不需要定义 trait 了，接下来，定义 WxcardController：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">WxcardController</span> <span class="o">(</span>
-  <span class="n">cc</span><span class="k">:</span> <span class="kt">ControllerComponents</span><span class="o">,</span>
-  <span class="n">wxcardService</span><span class="k">:</span> <span class="kt">WxcardService</span><span class="o">,</span>
-  <span class="n">wxcardMemberService</span><span class="k">:</span> <span class="kt">WxcardMemberService</span>
-<span class="o">)</span> <span class="k">extends</span> <span class="nc">AbstractController</span><span class="o">(</span><span class="n">cc</span><span class="o">)</span> <span class="o">{...}</span>
-</code></pre></div><p>controller 的定义和上面的一样，接下来，我们就使用 macwire 来实现依赖注入，macwire 也是「编译时依赖注入」的一种，所以我们同样需要实现 ApplicationLoader：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">com.softwaremill.macwire._</span>
-<span class="o">...</span>
-
-<span class="k">class</span> <span class="nc">MyComponents</span><span class="o">(</span><span class="n">context</span><span class="k">:</span> <span class="kt">ApplicationLoader.Context</span><span class="o">)</span>
+<span class="k">class</span> <span class="nc">MyComponents</span><span class="o">(</span><span class="n">context</span><span class="k">:</span> <span class="kt">Context</span><span class="o">)</span>
     <span class="k">extends</span> <span class="nc">BuiltInComponentsFromContext</span><span class="o">(</span><span class="n">context</span><span class="o">)</span>
     <span class="k">with</span> <span class="n">play</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="nc">HttpFiltersComponents</span> <span class="o">{</span>
 
-  <span class="k">lazy</span> <span class="k">val</span> <span class="n">databaseAccessService</span> <span class="k">=</span> <span class="n">wire</span><span class="o">[</span><span class="kt">DatabaseAccessService</span><span class="o">]</span>
-  <span class="k">lazy</span> <span class="k">val</span> <span class="n">wxcardService</span> <span class="k">=</span> <span class="n">wire</span><span class="o">[</span><span class="kt">WxcardService</span><span class="o">]</span>
-  <span class="k">lazy</span> <span class="k">val</span> <span class="n">wxcardMemberService</span> <span class="k">=</span> <span class="n">wire</span><span class="o">[</span><span class="kt">WxcardMemberService</span><span class="o">]</span>
-  <span class="k">lazy</span> <span class="k">val</span> <span class="n">wxcardController</span> <span class="k">=</span> <span class="n">wire</span><span class="o">[</span><span class="kt">WxcardController</span><span class="o">]</span>
-  <span class="k">lazy</span> <span class="k">val</span> <span class="n">router</span><span class="k">:</span> <span class="kt">Router</span> <span class="o">=</span> <span class="o">{</span>
-    <span class="k">val</span> <span class="n">prefix</span> <span class="k">=</span> <span class="s">"/"</span>
-    <span class="n">wire</span><span class="o">[</span><span class="kt">Routes</span><span class="o">]</span>
-  <span class="o">}</span>
-<span class="o">}</span>
-</code></pre></div><p>在上面的代码中，我们只需要将相应的依赖通过下面的方式实例化就可以了：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">lazy</span> <span class="k">val</span> <span class="n">wxcardService</span> <span class="k">=</span> <span class="n">wire</span><span class="o">[</span><span class="kt">WxcardService</span><span class="o">]</span>
-</code></pre></div><p>就是在类型外面添加了一个 <code class="highlighter-rouge">wire</code>，这样就完成了实例化，并且也不需要指定依赖的参数，macwire 会自动帮我们完成实例化和注入：</p><p>比如上面的</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">lazy</span> <span class="k">val</span> <span class="n">databaseAccessService</span> <span class="k">=</span> <span class="n">wire</span><span class="o">[</span><span class="kt">DatabaseAccessService</span><span class="o">]</span>
-<span class="k">lazy</span> <span class="k">val</span> <span class="n">wxcardService</span> <span class="k">=</span> <span class="n">wire</span><span class="o">[</span><span class="kt">WxcardService</span><span class="o">]</span>
-<span class="k">lazy</span> <span class="k">val</span> <span class="n">wxcardMemberService</span> <span class="k">=</span> <span class="n">wire</span><span class="o">[</span><span class="kt">WxcardMemberService</span><span class="o">]</span>
-<span class="k">lazy</span> <span class="k">val</span> <span class="n">wxcardController</span> <span class="k">=</span> <span class="n">wire</span><span class="o">[</span><span class="kt">WxcardController</span><span class="o">]</span>
-</code></pre></div><p>macwire 就帮我们转化成了：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">lazy</span> <span class="k">val</span> <span class="n">databaseAccessService</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">DatabaseAccessService</span><span class="o">()</span>
-<span class="k">lazy</span> <span class="k">val</span> <span class="n">wxcardService</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">WxcardService</span><span class="o">(</span><span class="n">databaseAccessService</span><span class="o">)</span>
-<span class="k">lazy</span> <span class="k">val</span> <span class="n">wxcardMemberService</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">WxcardMemberService</span><span class="o">(</span><span class="n">databaseAccessService</span><span class="o">)</span>
-<span class="k">lazy</span> <span class="k">val</span> <span class="n">wxcardController</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">WxcardController</span><span class="o">(</span><span class="n">controllerComponents</span><span class="o">,</span> <span class="n">wxcardService</span><span class="o">,</span> <span class="n">wxcardMemberService</span><span class="o">)</span>
-</code></pre></div><p>我们只需要在定义某个类的时候声明我们需要哪些依赖，实例化和注入 macwire 都会帮我们去完成，macwire 在实例化某个类的时候，会去当前文件或者与当前文件有关的代码中查找相关的依赖，找到了就完成注入，若没有找到说明该依赖没有被定义过，或者没有正确引入。</p><p>在日常开发中，我们会创建很多个 service，将所有的 service 放在 MyComponents 中实例化会使得代码显得很臃肿，而且也不便于维护。通常我们会专门定义一个 Module 来组织这些 service：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">package</span> <span class="nn">config</span>
+  <span class="k">lazy</span> <span class="k">val</span> <span class="n">databaseAccessService</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">DatabaseAccessService</span>
 
-<span class="k">import</span> <span class="nn">com.softwaremill.macwire._</span>
+  <span class="k">lazy</span> <span class="k">val</span> <span class="n">employeeSerivce</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">EmployeeSerivce</span><span class="o">(</span><span class="n">databaseAccessService</span><span class="o">)</span>
+
+  <span class="k">lazy</span> <span class="k">val</span> <span class="n">employeeController</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">EmployeeController</span><span class="o">(</span><span class="n">employeeSerivce</span><span class="o">,</span> <span class="n">controllerComponents</span><span class="o">)</span>
+
+  <span class="k">lazy</span> <span class="k">val</span> <span class="n">router</span><span class="k">:</span> <span class="kt">Router</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Routes</span><span class="o">(</span><span class="n">httpErrorHandler</span><span class="o">,</span> <span class="n">employeeController</span><span class="o">)</span>
+<span class="o">}</span>
+</code></pre></div><p>我们通过继承 BuiltInComponentsFromContext 使得程序能够根据 Play 所提供的 context 来加载 Play 框架本身所需要的一些组件。</p><p>那么回到我们的「编译时的依赖注入」中来，可以看到在 class MyComponents 中，我们将所有的 service 都实例化了，并且将这些实例注入到相应的依赖她们的模块中：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code>
+<span class="c1">//将两个 service 实例化
+</span>
+<span class="k">lazy</span> <span class="k">val</span> <span class="n">databaseAccessService</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">DatabaseAccessService</span>
+
+<span class="c1">//EmployeeSerivce 依赖 DatabaseAccessService，将实例 databaseAccessService 注入其中
+</span>
+<span class="k">lazy</span> <span class="k">val</span> <span class="n">employeeSerivce</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">EmployeeSerivce</span><span class="o">(</span><span class="n">databaseAccessService</span><span class="o">)</span>
+
+<span class="c1">//将 employeeSerivce 注入到 employeeController 中
+</span><span class="k">lazy</span> <span class="k">val</span> <span class="n">employeeController</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">EmployeeController</span><span class="o">(</span><span class="n">employeeSerivce</span><span class="o">,</span> <span class="n">controllerComponents</span><span class="o">)</span>
+</code></pre></div><p>使用 BuiltInComponentsFromContext 时，我们需要自己实现一下 router：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code>
+<span class="k">lazy</span> <span class="k">val</span> <span class="n">router</span><span class="k">:</span> <span class="kt">Router</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Routes</span><span class="o">(</span><span class="n">httpErrorHandler</span><span class="o">,</span> <span class="n">employeeController</span><span class="o">)</span>
+</code></pre></div><p>tip：需要注意的是，如果我们实现了自己的 ApplicationLoader，我们需要在 <code class="highlighter-rouge">application.conf</code> 文件中声明一下：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code>
+<span class="n">play</span><span class="o">.</span><span class="n">application</span><span class="o">.</span><span class="n">loader</span> <span class="k">=</span> <span class="nc">MyApplicationLoader</span>
+</code></pre></div><p>通过自定义 ApplicationLoader 我们就实现了编译时期的依赖注入，那么 EmployeeSerivce 就变成了：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code>
+<span class="k">package</span> <span class="nn">services</span>
+
+<span class="k">import</span> <span class="nn">models._</span>
+
+<span class="k">class</span> <span class="nc">EmployeeSerivce</span> <span class="o">(</span><span class="n">db</span><span class="k">:</span> <span class="kt">DBService</span><span class="o">){</span>
+  <span class="o">...</span>
+<span class="o">}</span>
+</code></pre></div><p>可以看到， 这里就省去了 <code class="highlighter-rouge">@Inject()</code> 注解。</p><p>同样的，对于 EmployeeController：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code>
+<span class="k">package</span> <span class="nn">controllers</span>
+
+<span class="k">import</span> <span class="nn">play.api._</span>
+<span class="k">import</span> <span class="nn">play.api.mvc._</span>
+<span class="k">import</span> <span class="nn">models._</span>
 <span class="k">import</span> <span class="nn">services._</span>
 
-<span class="k">trait</span> <span class="nc">ServicesModule</span> <span class="o">{</span>
-  <span class="k">lazy</span> <span class="k">val</span> <span class="n">databaseAccessService</span> <span class="k">=</span> <span class="n">wire</span><span class="o">[</span><span class="kt">DatabaseAccessService</span><span class="o">]</span>
-  <span class="k">lazy</span> <span class="k">val</span> <span class="n">wxcardService</span> <span class="k">=</span> <span class="n">wire</span><span class="o">[</span><span class="kt">WxcardService</span><span class="o">]</span>
-  <span class="k">lazy</span> <span class="k">val</span> <span class="n">wxcardMemberService</span> <span class="k">=</span> <span class="n">wire</span><span class="o">[</span><span class="kt">WxcardMemberService</span><span class="o">]</span>
+<span class="c1">// 没有了 @Inject() 注解
+</span>
+<span class="k">class</span> <span class="nc">EmployeeController</span> <span class="o">(</span>
+  <span class="n">employeeSerivce</span><span class="k">:</span> <span class="kt">EmployeeSerivce</span><span class="o">,</span>
+  <span class="n">cc</span><span class="k">:</span> <span class="kt">ControllerComponents</span>
+<span class="o">)</span> <span class="k">extends</span> <span class="nc">AbstractController</span><span class="o">(</span><span class="n">cc</span><span class="o">)</span> <span class="o">{</span>
+  <span class="o">...</span>
 <span class="o">}</span>
-
-</code></pre></div><p>这里我们新建了一个 ServiceModule.scala 文件来将组织这些 service。</p><p>那么上面的 ApplicationLoader 文件就可以这样去写：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">com.softwaremill.macwire._</span>
-<span class="o">...</span>
-
-<span class="k">class</span> <span class="nc">MyComponents</span><span class="o">(</span><span class="n">context</span><span class="k">:</span> <span class="kt">ApplicationLoader.Context</span><span class="o">)</span>
-    <span class="k">extends</span> <span class="nc">BuiltInComponentsFromContext</span><span class="o">(</span><span class="n">context</span><span class="o">)</span>
-    <span class="k">with</span> <span class="n">play</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="nc">HttpFiltersComponents</span>
-    <span class="k">with</span> <span class="n">config</span><span class="o">.</span><span class="nc">ServicesModule</span> <span class="o">{</span>
-
-  <span class="k">lazy</span> <span class="k">val</span> <span class="n">wxcardController</span> <span class="k">=</span> <span class="n">wire</span><span class="o">[</span><span class="kt">WxcardController</span><span class="o">]</span>
-  <span class="k">lazy</span> <span class="k">val</span> <span class="n">router</span><span class="k">:</span> <span class="kt">Router</span> <span class="o">=</span> <span class="o">{</span>
-    <span class="k">val</span> <span class="n">prefix</span> <span class="k">=</span> <span class="s">"/"</span>
-    <span class="n">wire</span><span class="o">[</span><span class="kt">Routes</span><span class="o">]</span>
-  <span class="o">}</span>
-<span class="o">}</span>
-</code></pre></div><p>可以看到 macwire 使用起来非常简单，并且能够简化我们的依赖注入。在我们的项目中所采用的是 macwire，所以推荐大家使用 macwire。</p><h2 id="结语">结语</h2><p>关于 Play 中的「依赖注入」到这里就结束了，希望能够给大家一些帮助，另外 Play 系列的文章从上一篇到现在拖了太久了，非常抱歉，感谢一直以来的关注，后面我会加快写作节奏的，本文的例子请戳<a href="https://github.com/Shonrain/Play-Demo/tree/master/play-demo-3">源码链接</a>。</p></article><div class="page-navigation"> <a class="home" href="/" title="Back to Homepage">Home</a> <span> &middot; </span> <a class="prev" href="/notes/reactive-web-application-5" title="PREV: <译> 响应式 Web 应用（五）">&gt;&gt;</a></div></main><div class="footer"> <!-- 多说评论框 start --><div class="ds-thread" data-thread-key="Play! Framework 系列（四）：依赖注入" data-title="Play! Framework 系列（四）：依赖注入" data-url="http://shawdubie.com/notes/Play! Framework 系列（四）：依赖注入"></div><!-- 多说评论框 end --> · <span class="block">Made with &hearts; using <a href="http://jekyllrb.com/" target="_blank">Jekyll</a> &amp; <a href="https://github.com/heiswayi/the-plain" title="The Plain theme by Heiswayi Nrird" target="_blank">The Plain</a> &middot; &lt;/&gt; on <a href="https://github.com/Shonrain" title="Hosted on GitHub" target="_blank">GitHub</a></span> <span class="block">&copy; 2018 ShawDubie</span></div></body></html>
+</code></pre></div><p>通过使用编译时期的依赖注入，我们只需要在将所有的依赖实例化一次就够了，并且使用这种方式，我们能够在编译时期就能发现程序的一些异常。同样的，使用该方法也会有一些问题，就是我们需要写许多样板代码。另外本文的编译时期的依赖注入完全是自己手动注入的，看上去也比较繁琐，不是那么直观，如果要使用更优雅的方式，我们可以使用 <a href="https://github.com/adamw/macwire">macwire</a>，这个我们在后面的文章中会详细讲解。</p><h2 id="结语">结语</h2><p>本文简单介绍了一下 Play 支持的两种依赖注入的模式，文中提到的一些第三方依赖注入的框架我们会在后面的文章中详细介绍。本文的例子请戳<a href="https://github.com/Shonrain/Play-Demo/tree/master/play-demo-2">源码链接</a></p></article><div class="page-navigation"> <a class="next" href="/notes/reactive-web-application-4" title="NEXT: <译> 响应式 Web 应用（四）">&lt;&lt;</a> <span> &middot; </span> <a class="home" href="/" title="Back to Homepage">Home</a> <span> &middot; </span> <a class="prev" href="/notes/reactive-web-applications-3" title="PREV: <译> 响应式 Web 应用（三）">&gt;&gt;</a></div></main><div class="footer"> <!-- 多说评论框 start --><div class="ds-thread" data-thread-key="Play! Framework 系列（三）：依赖注入" data-title="Play! Framework 系列（三）：依赖注入" data-url="http://shawdubie.com/notes/Play! Framework 系列（三）：依赖注入"></div><!-- 多说评论框 end --> · <span class="block">Made with &hearts; using <a href="http://jekyllrb.com/" target="_blank">Jekyll</a> &amp; <a href="https://github.com/heiswayi/the-plain" title="The Plain theme by Heiswayi Nrird" target="_blank">The Plain</a> &middot; &lt;/&gt; on <a href="https://github.com/Shonrain" title="Hosted on GitHub" target="_blank">GitHub</a></span> <span class="block">&copy; 2018 ShawDubie</span></div></body></html>
