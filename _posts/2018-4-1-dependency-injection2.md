@@ -1,5 +1,5 @@
 ---
-title: Play! Framework 系列（四）：依赖注入
+title: Play! Framework 系列（四）：DI 模式比较
 ---
 
 在[Play! Framework 系列（三）](http://shawdubie.com/notes/dependency-injection)中我们简单介绍了一下 Play 框架自身支持的两种依赖注入（运行时依赖注入、编译时依赖注入）。相信大家对 Play! 的依赖注入应该有所了解了。本文将详细地介绍一些在日常开发中所采用的依赖注入的方式，以供大家进行合理地选择。
