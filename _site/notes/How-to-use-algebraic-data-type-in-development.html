@@ -1,0 +1,227 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1" /><title>如何在 Scala 中利用 ADT 良好地组织业务</title><meta name="twitter:card" content="summary" /><meta name="twitter:site" content="@HeiswayiNrird" /><meta name="twitter:title" content="如何在 Scala 中利用 ADT 良好地组织业务" /><meta name="twitter:description" content="在用 Scala 做业务开发的时候，我们大都会用到 case class 以及「模式匹配」，本文将介绍在日常开发中如何利用 case class 模拟 ADT 去良好地组织业务。"><meta name="description" content="在用 Scala 做业务开发的时候，我们大都会用到 case class 以及「模式匹配」，本文将介绍在日常开发中如何利用 case class 模拟 ADT 去良好地组织业务。"> <script> var _hmt = _hmt || []; (function() { var hm = document.createElement("script"); hm.src = "https://hm.baidu.com/hm.js?2db4617ae1e0a3147b448ffe9d4a4c26"; var s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm, s); })(); </script><link rel="icon" href="/assets/favicon.png"><link rel="apple-touch-icon" href="/assets/touch-icon.png"><style> /* latin-ext */ @font-face { font-family: 'Karla'; font-style: normal; font-weight: 400; src: local('Karla'), local('Karla-Regular'), url(https://fonts.gstatic.com/s/karla/v5/S1bXQ0LrY7AzefpgNae9sYDGDUGfDkXyfkzVDelzfFk.woff2) format('woff2'); unicode-range: U+0100-024F, U+1E00-1EFF, U+20A0-20AB, U+20AD-20CF, U+2C60-2C7F, U+A720-A7FF; } /* latin */ @font-face { font-family: 'Karla'; font-style: normal; font-weight: 400; src: local('Karla'), local('Karla-Regular'), url(https://fonts.gstatic.com/s/karla/v5/JaMH4jmmzP070-OYo03anaCWcynf_cDxXwCLxiixG1c.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215; }</style><link rel="stylesheet" href="/assets/core.css"><link rel="canonical" href="/notes/How-to-use-algebraic-data-type-in-development"><link rel="alternate" type="application/atom+xml" title="ShawDubie" href="/feed.xml" /> <!-- 多说公共JS代码 start (一个网页只需插入一次) --> <script type="text/javascript"> var duoshuoQuery = {short_name:"shawdubie"}; (function() { var ds = document.createElement('script'); ds.type = 'text/javascript';ds.async = true; ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js'; ds.charset = 'UTF-8'; (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ds); })(); </script> <!-- 多说公共JS代码 end --></head><body><aside class="logo"> <a href="/"> <img src="../assets/img/shaw.jpeg" class="gravatar"> </a> <span class="logo-prompt">Back to Home</span></aside><main> <noscript><style> article .footnotes { display: block; }</style></noscript><article><div class="center"><h1>如何在 Scala 中利用 ADT 良好地组织业务</h1><time>March 20, 2017</time></div><div class="divider"></div><p>在用 <code class="highlighter-rouge">Scala</code> 做业务开发的时候，我们大都会用到 <code class="highlighter-rouge">case class</code> 以及「模式匹配」，本文将介绍在日常开发中如何利用 <code class="highlighter-rouge">case class</code> 模拟 <code class="highlighter-rouge">ADT</code> 去良好地组织业务。</p><h2 id="adt代数数据类型">ADT（代数数据类型）</h2><blockquote><p>在计算机编程、特别是函数式编程与类型理论中，<code class="highlighter-rouge">ADT</code> 是一种 <code class="highlighter-rouge">composite type</code>（组合类型）。例如，一个类型由其它类型组合而成。两个常见的代数类型是 <code class="highlighter-rouge">product</code>（积）类型 (比如 <code class="highlighter-rouge">tuples</code> 和 <code class="highlighter-rouge">records</code> )和<code class="highlighter-rouge">sum</code>（和）类型，它也被称为 <code class="highlighter-rouge">tagged unions</code> 或 <code class="highlighter-rouge">variant type</code>。</p></blockquote><p>这里简单介绍一下常见的两种代数类型 <code class="highlighter-rouge">product</code>（积）类型和 <code class="highlighter-rouge">sum</code>（和）类型</p><h3 id="计数counting">计数（Counting）</h3><p>在介绍两种常见代数类型之前我们先介绍一下 「计数」 的概念，方面理解后面所要介绍的内容。</p><p>为了将某个类型与我们熟悉的数字代数相关联，我们可以计算该类型有多少种取值，例如 <code class="highlighter-rouge">Haskell</code>中的<code class="highlighter-rouge">Bool</code> 类型：</p><div class="language-haskell highlighter-rouge"><pre class="highlight"><code><span class="kr">data</span> <span class="kt">Bool</span> <span class="o">=</span> <span class="n">true</span> <span class="o">|</span> <span class="n">false</span>
+</code></pre></div><p>可以看到 <code class="highlighter-rouge">Bool</code> 类型有两种可能的取值，要么是 <code class="highlighter-rouge">false</code>, 要么是 <code class="highlighter-rouge">true</code>, 所以这里我们暂时将数字 <code class="highlighter-rouge">2</code> 与 <code class="highlighter-rouge">Bool</code> 类型相关联。</p><p>如果 <code class="highlighter-rouge">Bool</code> 类型关联的是 <code class="highlighter-rouge">2</code>，那么何种类型是 <code class="highlighter-rouge">1</code> 呢，在 <code class="highlighter-rouge">Scala</code> 中 <code class="highlighter-rouge">Unit</code> 类型只有一种取值：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">scala</span><span class="o">&gt;</span> <span class="k">val</span> <span class="n">a</span> <span class="k">=</span> <span class="o">()</span>
+<span class="n">a</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">()</span>
+</code></pre></div><p>所以这里我们将数字 <code class="highlighter-rouge">1</code> 与 <code class="highlighter-rouge">Unit</code> 类型相关联。</p><p>有了 「计数」 这个概念，接下来我们介绍常见的两种代数类型。</p><h3 id="product">product</h3><p><code class="highlighter-rouge">product</code> 可以理解为是一种 组合（<code class="highlighter-rouge">combination</code>），可以通过我们熟悉的 <code class="highlighter-rouge">*</code>（乘法） 操作来产生，对应的类型为：</p><div class="highlighter-rouge"><pre class="highlight"><code>data Mul a b = Mul a b
+</code></pre></div><p>也就是说， <code class="highlighter-rouge">a * b </code> 类型是同时持有 <code class="highlighter-rouge">a</code> 和 <code class="highlighter-rouge">b</code> 的容器。</p><p>在 <code class="highlighter-rouge">Scala</code>中，<code class="highlighter-rouge">tuples</code>（元组）就是这样的，例如：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">scala</span><span class="o">&gt;</span> <span class="k">val</span> <span class="n">b</span><span class="k">:</span><span class="o">(</span><span class="kt">Boolean</span><span class="o">,</span> <span class="kt">Boolean</span><span class="o">)</span> <span class="k">=</span> <span class="o">???</span>
+</code></pre></div><p>我们定义的元组 <code class="highlighter-rouge">b</code> 就是两个 <code class="highlighter-rouge">Boolean</code> 类型的组合，也就是说，元组 <code class="highlighter-rouge">b</code> 是同时拥有两个 <code class="highlighter-rouge">Boolean</code> 类型的容器，可以通过我们前面介绍的 「计数」 的概念来理解：</p><p><code class="highlighter-rouge">Boolean</code> 类型有两种取值，当 <code class="highlighter-rouge">Boolean</code> 和 <code class="highlighter-rouge">Boolean</code> 通过 <code class="highlighter-rouge">*</code> 操作进行组合时：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="mi">2</span> <span class="o">*</span> <span class="mi">2</span> <span class="k">=</span> <span class="mi">4</span>
+</code></pre></div><p>所以我们定义的元组 <code class="highlighter-rouge">b</code> 有四种可能的取值，我们利用 「模式匹配」 来列举这四种取值：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">b</span> <span class="k">match</span> <span class="o">{</span>
+  <span class="k">case</span> <span class="o">(</span><span class="kc">true</span><span class="o">,</span> <span class="kc">true</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="o">???</span>
+  <span class="k">case</span> <span class="o">(</span><span class="kc">true</span><span class="o">,</span> <span class="kc">false</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="o">???</span>
+  <span class="k">case</span> <span class="o">(</span><span class="kc">false</span><span class="o">,</span> <span class="kc">true</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="o">???</span>
+  <span class="k">case</span> <span class="o">(</span><span class="kc">false</span><span class="o">,</span> <span class="kc">false</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="o">???</span>
+<span class="o">}</span>
+</code></pre></div><h3 id="sum">sum</h3><p><code class="highlighter-rouge">sum</code> 可以理解为是一种 <code class="highlighter-rouge">alternation</code>（选择），可以通过我们熟悉的 <code class="highlighter-rouge">+</code> 操作来产生，对应的类型为：</p><div class="language-haskell highlighter-rouge"><pre class="highlight"><code><span class="kr">data</span> <span class="kt">Add</span> <span class="n">a</span> <span class="n">b</span> <span class="o">=</span> <span class="kt">AddL</span> <span class="n">a</span> <span class="o">|</span> <span class="kt">AddR</span> <span class="n">b</span>
+</code></pre></div><p><code class="highlighter-rouge">a + b</code> 是一个和类型，同时拥有 <code class="highlighter-rouge">a</code> 或者 <code class="highlighter-rouge">b</code>。</p><p>注意这里是 <code class="highlighter-rouge">a</code> 或者 <code class="highlighter-rouge">b</code>，不同于上面介绍的 <code class="highlighter-rouge">*</code>。</p><p>这里可能就会有疑惑了，为什么 <code class="highlighter-rouge">+</code> 操作对应的语义是「或者」 呢，我们依然通过前面介绍的 「计数」 的概念来理解：</p><p>在 <code class="highlighter-rouge">Scala</code> 中 <code class="highlighter-rouge">Option</code> 就是一种 <code class="highlighter-rouge">sum</code> 类型，例如：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">scala</span><span class="o">&gt;</span> <span class="k">val</span> <span class="n">c</span> <span class="k">=</span> <span class="nc">Option</span><span class="o">(</span><span class="kc">false</span><span class="o">)</span>
+<span class="n">c</span><span class="k">:</span> <span class="kt">Option</span><span class="o">[</span><span class="kt">Boolean</span><span class="o">]</span> <span class="k">=</span> <span class="nc">Some</span><span class="o">(</span><span class="kc">false</span><span class="o">)</span>
+</code></pre></div><p><code class="highlighter-rouge">option[Boolean]</code> 其实是 <code class="highlighter-rouge">Boolean</code> 与 <code class="highlighter-rouge">None</code> 通过 <code class="highlighter-rouge">+</code> 操作得到的，分析：</p><p><code class="highlighter-rouge">Boolean</code> 有两种取值，<code class="highlighter-rouge">None</code> 只有一种，那么：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">=</span> <span class="mi">3</span>
+</code></pre></div><p>所以我们定义的 <code class="highlighter-rouge">c: Option[Boolean]</code> 有三种可能的取值，我们利用 「模式匹配」 来列举这三种取值：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">c</span> <span class="k">match</span> <span class="o">{</span>
+  <span class="k">case</span> <span class="nc">Some</span><span class="o">(</span><span class="kc">true</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="o">???</span>
+  <span class="k">case</span> <span class="nc">Some</span><span class="o">(</span><span class="kc">false</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="o">???</span>
+  <span class="k">case</span> <span class="nc">None</span> <span class="k">=&gt;</span> <span class="o">???</span>
+<span class="o">}</span>
+</code></pre></div><p>我们可以看到，<code class="highlighter-rouge">Option[Boolean]</code> 类型的取值要么是 <code class="highlighter-rouge">Boolean</code> 类型，要么是 <code class="highlighter-rouge">None</code> 类型，这两种类型是「不能同时」存在的，这一点与 <code class="highlighter-rouge">product</code> 类型不同。并且 <code class="highlighter-rouge">sum</code> 类型是一个「闭环」，类型的定义已经包含了所有可能性，绝无可能会出现非法状态。</p><h2 id="在业务中使用-adt">在业务中使用 ADT</h2><p>我们在利用 <code class="highlighter-rouge">Scala</code> 的 <code class="highlighter-rouge">case class</code> 组织业务的时候其实就已经用到了 <code class="highlighter-rouge">ADT</code>，例如：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">sealed</span> <span class="k">trait</span> <span class="nc">Tree</span>
+<span class="k">case</span> <span class="k">class</span> <span class="nc">Node</span><span class="o">(</span><span class="n">left</span><span class="k">:</span> <span class="kt">Tree</span><span class="o">,</span> <span class="n">right</span><span class="k">:</span> <span class="kt">Tree</span><span class="o">)</span> <span class="k">extends</span> <span class="nc">Tree</span>
+<span class="k">case</span> <span class="k">class</span> <span class="nc">Leaf</span><span class="o">[</span><span class="kt">A</span><span class="o">](</span><span class="n">value</span><span class="k">:</span> <span class="kt">A</span><span class="o">)</span> <span class="k">extends</span> <span class="nc">Tree</span>
+</code></pre></div><p>在上面 「树」 结构的定义中，<code class="highlighter-rouge">Node</code>、<code class="highlighter-rouge">Leaf</code> 通过继承 <code class="highlighter-rouge">Tree</code>，通过这种继承关系而得到的类型就是 <code class="highlighter-rouge">ADT</code> 中的 <code class="highlighter-rouge">sum</code>，而构造 <code class="highlighter-rouge">Node</code> 和 <code class="highlighter-rouge">Leaf</code> 的时候则是 <code class="highlighter-rouge">ADT</code> 中的 <code class="highlighter-rouge">product</code>。大家可以通过我们前面所说的 「计数」的概念来验证。</p><p>上面的代码中出现了一个关键字 <code class="highlighter-rouge">sealed</code>，我们先介绍一下这个关键字。</p><h3 id="sealed">Sealed</h3><p>前面我们说过 <code class="highlighter-rouge">sum</code> 类型是一个 「闭环」，当我们将「样例类」的「超类」声明为 <code class="highlighter-rouge">sealed</code> 后，该超类就变成了一个 「密封类」，「密封类」的子类都必须在与该密封类相同的文件中定义，从而达到了上面说的「闭环」的效果。</p><p>比如我们现在要为上面的 <code class="highlighter-rouge">Tree</code> 添加一个 <code class="highlighter-rouge">EmptyLeaf</code>：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">case</span> <span class="k">object</span> <span class="nc">EmptyLeaf</span> <span class="k">extends</span> <span class="nc">Tree</span>
+</code></pre></div><p>那这段被添加的代码必须放在我们上面声明 <code class="highlighter-rouge">Tree</code> 的那个文件里面，否则会报错。</p><p>另外，<code class="highlighter-rouge">sealed</code> 关键字也可以让「编译器」检查「模式」语句的完整性,例如：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">sealed</span> <span class="k">trait</span> <span class="nc">Answer</span>
+<span class="k">case</span> <span class="k">object</span> <span class="nc">Yes</span> <span class="k">extends</span> <span class="nc">Answer</span>
+<span class="k">case</span> <span class="k">object</span> <span class="nc">No</span> <span class="k">extends</span> <span class="nc">Answer</span>
+
+<span class="k">val</span> <span class="n">x</span><span class="k">:</span> <span class="kt">Answer</span> <span class="o">=</span> <span class="nc">Yes</span>
+
+<span class="n">x</span> <span class="k">match</span> <span class="o">{</span>
+    <span class="k">case</span> <span class="nc">Yes</span> <span class="k">=&gt;</span> <span class="n">println</span><span class="o">(</span><span class="s">"Yes"</span><span class="o">)</span>
+<span class="o">}</span>
+
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span> <span class="n">warning</span><span class="k">:</span> <span class="kt">match</span> <span class="kt">may</span> <span class="kt">not</span> <span class="kt">be</span> <span class="kt">exhaustive.</span>
+<span class="kt">It</span> <span class="kt">would</span> <span class="kt">fail</span> <span class="kt">on</span> <span class="kt">the</span> <span class="kt">following</span> <span class="kt">input:</span> <span class="kt">No</span>
+       <span class="n">x</span> <span class="k">match</span> <span class="o">{</span>
+       <span class="o">^</span>
+</code></pre></div><p>「编译器」会在编译阶段提前给我们一个可能会出错的「警告（warning）」</p><h3 id="利用-adt-来良好地组织业务">利用 ADT 来良好地组织业务</h3><p>前面说了这么多，终于进入正题了，接下来我们以几个例子来说明如何在开发中合理地利用 <code class="highlighter-rouge">ADT</code>。</p><h4 id="场景一">场景一</h4><p>现在我们要开发一个与「优惠券」有关的业务，一般情况下，我们可能会这么去定义优惠券的结构：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">case</span> <span class="k">class</span> <span class="nc">Coupon</span> <span class="o">(</span>
+  <span class="n">id</span><span class="k">:</span> <span class="kt">Long</span><span class="o">,</span>
+  <span class="n">baseInfo</span><span class="k">:</span> <span class="kt">BaseInfo</span><span class="o">,</span>
+  <span class="n">`type`</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span>
+  <span class="o">...</span>
+<span class="o">)</span>
+
+<span class="k">object</span> <span class="nc">Coupon</span> <span class="o">{</span>
+
+  <span class="c1">//优惠券类型
+</span>  <span class="k">object</span> <span class="nc">Type</span> <span class="o">{</span>
+
+    <span class="c1">// 现金券
+</span>
+    <span class="k">final</span> <span class="k">val</span> <span class="nc">CashType</span>       <span class="k">=</span> <span class="s">"CASH"</span>
+
+    <span class="c1">//折扣券
+</span>
+    <span class="k">final</span> <span class="k">val</span> <span class="nc">DiscountType</span>   <span class="k">=</span> <span class="s">"DISCOUNT"</span>
+
+    <span class="c1">// 礼品券
+</span>
+    <span class="k">final</span> <span class="k">val</span> <span class="nc">GiftType</span>       <span class="k">=</span> <span class="s">"GIFT"</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div><p>分析：这样去定义 「优惠券」 的结构也能解决问题，但是当 「优惠券」 类型增多的时候，会出现很多的冗余数据。比如说，不同的优惠类型，会有不同优惠信息，这些优惠信息在结构中对应的字段也会有所不同：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">case</span> <span class="k">class</span> <span class="nc">Coupon</span> <span class="o">(</span>
+  <span class="n">id</span><span class="k">:</span> <span class="kt">Long</span><span class="o">,</span>
+  <span class="n">baseInfo</span><span class="k">:</span> <span class="kt">BaseInfo</span><span class="o">,</span>
+  <span class="n">`type`</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span>
+
+  <span class="c1">// 仅在优惠券类型是代金券的时候使用
+</span>
+  <span class="n">leastCost</span><span class="k">:</span> <span class="kt">Option</span><span class="o">[</span><span class="kt">Long</span><span class="o">],</span>
+  <span class="n">reduceCost</span><span class="k">:</span> <span class="kt">Option</span><span class="o">[</span><span class="kt">Long</span><span class="o">],</span>
+
+  <span class="c1">//仅在优惠券类型是折扣券的时候使用
+</span>
+  <span class="n">discount</span><span class="k">:</span> <span class="kt">Option</span><span class="o">[</span><span class="kt">Int</span><span class="o">],</span>
+
+  <span class="c1">//仅在优惠券是礼品券的时候使用
+</span>
+  <span class="n">gift</span><span class="k">:</span> <span class="kt">Option</span><span class="o">[</span><span class="kt">String</span><span class="o">]</span>
+<span class="o">)</span>
+</code></pre></div><p>从上定义的结构我们可以看到，当我们使用 「礼品券」 的时候，有三个字段（<code class="highlighter-rouge">leastCost</code>、<code class="highlighter-rouge">reduceCost</code>、<code class="highlighter-rouge">discount</code>）的值是 <code class="highlighter-rouge">None</code>，因为我们根本就用不到。由此可以看出，当 「优惠券」 的结构比较复杂的时候，可能会产生大量的冗余字段，从而使我们的代码看上去非常臃肿，同时增加了我们的开发难度。</p><h5 id="利用-adt-重新组织">利用 <code class="highlighter-rouge">ADT</code> 重新组织：</h5><p>分析：通过上面的讨论，我们知道 「优惠券」 可能有多种类型，所以，我们利用 <code class="highlighter-rouge">ADT</code> 将不同的「优惠券」分离开来：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code>
+<span class="c1">// 将每一种优惠券公共的部分抽离出来
+</span>
+<span class="k">sealed</span> <span class="k">trait</span> <span class="nc">Coupon</span> <span class="o">{</span>
+  <span class="k">val</span> <span class="n">id</span><span class="k">:</span> <span class="kt">Long</span>
+  <span class="k">val</span> <span class="n">baseInfo</span><span class="k">:</span> <span class="kt">BaseInfo</span>
+  <span class="k">val</span> <span class="n">status</span><span class="k">:</span> <span class="kt">Int</span>
+  <span class="k">val</span> <span class="n">`type`</span><span class="k">:</span> <span class="kt">String</span>
+  <span class="o">...</span>
+<span class="o">}</span>
+
+<span class="k">case</span> <span class="k">class</span> <span class="nc">CashCoupon</span> <span class="o">(</span>
+  <span class="n">id</span><span class="k">:</span> <span class="kt">Long</span><span class="o">,</span>
+  <span class="n">baseInfo</span><span class="k">:</span> <span class="kt">BaseInfo</span><span class="o">,</span>
+  <span class="n">`type`</span><span class="k">:</span> <span class="kt">String</span> <span class="o">=</span> <span class="nc">Coupon</span><span class="o">.</span><span class="nc">Type</span><span class="o">.</span><span class="nc">CashType</span><span class="o">,</span>
+  <span class="n">status</span><span class="k">:</span> <span class="kt">Int</span><span class="o">,</span>
+  <span class="n">leastCost</span><span class="k">:</span> <span class="kt">Long</span><span class="o">,</span>
+  <span class="n">reduceCost</span><span class="k">:</span> <span class="kt">Long</span><span class="o">,</span>
+  <span class="o">...</span>
+<span class="o">)</span> <span class="k">extends</span> <span class="nc">Coupon</span>
+
+<span class="k">case</span> <span class="k">class</span> <span class="nc">DiscountCoupon</span> <span class="o">(</span>
+  <span class="n">id</span><span class="k">:</span> <span class="kt">Long</span><span class="o">,</span>
+  <span class="n">baseInfo</span><span class="k">:</span> <span class="kt">BaseInfo</span><span class="o">,</span>
+  <span class="n">`type`</span><span class="k">:</span> <span class="kt">String</span> <span class="o">=</span> <span class="nc">Coupon</span><span class="o">.</span><span class="nc">Type</span><span class="o">.</span><span class="nc">DiscountType</span><span class="o">,</span>
+  <span class="n">status</span><span class="k">:</span> <span class="kt">Int</span><span class="o">,</span>
+  <span class="n">discount</span><span class="k">:</span> <span class="kt">Int</span><span class="o">,</span>
+  <span class="o">...</span>
+<span class="o">)</span> <span class="k">extends</span> <span class="nc">Coupon</span>
+
+<span class="k">case</span> <span class="k">class</span> <span class="nc">GiftCoupon</span> <span class="o">(</span>
+  <span class="n">id</span><span class="k">:</span> <span class="kt">Long</span><span class="o">,</span>
+  <span class="n">baseInfo</span><span class="k">:</span> <span class="kt">BaseInfo</span><span class="o">,</span>
+  <span class="n">`type`</span><span class="k">:</span> <span class="kt">String</span> <span class="o">=</span> <span class="nc">Coupon</span><span class="o">.</span><span class="nc">Type</span><span class="o">.</span><span class="nc">GiftType</span><span class="o">,</span>
+  <span class="n">status</span><span class="k">:</span> <span class="kt">Int</span><span class="o">,</span>
+  <span class="n">gift</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span>
+  <span class="o">...</span>
+<span class="o">)</span> <span class="k">extends</span> <span class="nc">Coupon</span>
+</code></pre></div><p>同过合理地利用 <code class="highlighter-rouge">ADT</code> 我们使每一种「优惠券」的结构更加清晰，同时也减少了字段的冗余。并且，如果在业务后期我们还要增加别的 「优惠券」类型，我们不用修改原来的结构，只需要再重新创建一个新的 <code class="highlighter-rouge">case class</code> 就可以了：</p><p>比如我们在后期增加了一种叫 「团购券」 的优惠券，我们不需要修改原来定义的结构，直接：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">case</span> <span class="k">class</span> <span class="nc">GroupCoupon</span> <span class="o">(</span>
+  <span class="n">id</span><span class="k">:</span> <span class="kt">Long</span><span class="o">,</span>
+   <span class="n">baseInfo</span><span class="k">:</span> <span class="kt">BaseInfo</span><span class="o">,</span>
+   <span class="n">`type`</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span>
+   <span class="n">status</span><span class="k">:</span> <span class="kt">Int</span><span class="o">,</span>
+   <span class="n">dealDetail</span><span class="k">:</span> <span class="kt">String</span>
+<span class="o">)</span>
+</code></pre></div><p>并且在利用「模式匹配」的时候，我们可以像操作代数那样：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">coupon</span> <span class="k">match</span> <span class="o">{</span>
+  <span class="k">case</span> <span class="n">c</span><span class="k">:</span> <span class="kt">CashCoupon</span> <span class="o">=&gt;</span> <span class="o">???</span>       <span class="c1">// 我们可以直接在匹配完成之后使用 coupon
+</span>  <span class="k">case</span> <span class="n">c</span><span class="k">:</span> <span class="kt">DiscountCoupon</span> <span class="o">=&gt;</span> <span class="o">???</span>
+  <span class="k">case</span> <span class="n">c</span><span class="k">:</span> <span class="kt">GiftCoupon</span> <span class="o">=&gt;</span> <span class="o">???</span>
+  <span class="k">case</span> <span class="n">c</span><span class="k">:</span> <span class="kt">GroupCoupon</span> <span class="o">=&gt;</span> <span class="o">???</span>
+<span class="o">}</span>
+
+<span class="c1">// 如果是我们用 ADT 改造前的数据结构，那模式匹配就会变成：
+</span>
+<span class="n">coupon</span><span class="o">.</span><span class="n">`type`</span> <span class="k">match</span> <span class="o">{</span>
+  <span class="k">case</span> <span class="nc">Coupon</span><span class="o">.</span><span class="nc">Type</span><span class="o">.</span><span class="nc">CashType</span> <span class="k">=&gt;</span> <span class="o">???</span>      <span class="c1">// 我们只能使用 coupon.`type`
+</span>  <span class="k">case</span> <span class="nc">Coupon</span><span class="o">.</span><span class="nc">Type</span><span class="o">.</span><span class="nc">GiftType</span> <span class="k">=&gt;</span> <span class="o">???</span>
+  <span class="k">case</span> <span class="nc">Coupon</span><span class="o">.</span><span class="nc">Type</span><span class="o">.</span><span class="nc">DiscountType</span> <span class="k">=&gt;</span> <span class="o">???</span>
+  <span class="k">case</span> <span class="nc">Coupon</span><span class="o">.</span><span class="nc">Type</span><span class="o">.</span><span class="nc">GroupCoupon</span> <span class="k">=&gt;</span> <span class="o">???</span>
+<span class="o">}</span>
+</code></pre></div><p>通过本例，我们可以看到，利用 <code class="highlighter-rouge">ADT</code> 重新组织之后的数据结构减少了数据的冗余，并且在使用「模式匹配」的时候更加清晰，在功能上也更加强大。</p><h4 id="场景二">场景二</h4><p>针对上面的优惠券，用户在使用这些优惠券的时候，优惠券会存在不同的几种状态：</p><ol><li><p>未领取</p></li><li><p>已领取但暂未使用</p></li><li><p>已使用</p></li><li><p>过期优惠券</p></li><li><p>无效优惠券</p></li></ol><p>我们现在想要根据这几种不同的状态渲染出不同的结果页面，要得到这几种状态，我们通常会：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">def</span> <span class="n">fetched</span><span class="o">(</span><span class="n">c</span><span class="k">:</span> <span class="kt">Coupon</span><span class="o">,</span> <span class="n">user</span><span class="k">:</span> <span class="kt">User</span><span class="o">)</span> <span class="k">=</span> <span class="o">{</span>
+  <span class="c1">//根据coupon信息以及user信息去查询用户是否已经领取了这张优惠券
+</span>  <span class="o">???</span>
+<span class="o">}</span>
+
+<span class="k">def</span> <span class="n">used</span><span class="o">(</span><span class="n">c</span><span class="k">:</span> <span class="kt">Coupon</span><span class="o">,</span> <span class="n">user</span><span class="k">:</span> <span class="kt">User</span><span class="o">)</span> <span class="k">=</span> <span class="o">{</span>
+  <span class="c1">//根据coupon信息以及user信息去查询用户是否已经使用了这张优惠券
+</span>  <span class="o">???</span>
+<span class="o">}</span>
+
+<span class="k">def</span> <span class="n">isExpired</span><span class="o">(</span><span class="n">c</span><span class="k">:</span> <span class="kt">Coupon</span><span class="o">)</span> <span class="k">=</span> <span class="o">{</span>
+  <span class="c1">//根据优惠券信息来判断优惠券是否已经过期
+</span>  <span class="o">???</span>
+<span class="o">}</span>
+
+<span class="k">def</span> <span class="n">isAviable</span><span class="o">(</span><span class="n">c</span><span class="k">:</span> <span class="kt">Coupon</span><span class="o">)</span> <span class="k">=</span> <span class="o">{</span>
+  <span class="c1">//根据优惠券信息来判断优惠券是否已经失效
+</span>  <span class="o">???</span>
+<span class="o">}</span>
+</code></pre></div><p>我们现在就利用这些状态去渲染页面：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">def</span> <span class="n">f</span><span class="o">(</span><span class="n">c</span><span class="k">:</span> <span class="kt">Coupon</span><span class="o">,</span> <span class="n">user</span><span class="k">:</span> <span class="kt">User</span><span class="o">)</span> <span class="k">=</span> <span class="o">{</span>
+  <span class="k">if</span> <span class="o">(!</span><span class="n">isAviable</span><span class="o">(</span><span class="n">coupon</span><span class="o">))</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(!</span><span class="n">isExpired</span><span class="o">(</span><span class="n">coupon</span><span class="o">))</span> <span class="o">{</span>
+      <span class="k">if</span> <span class="o">(</span><span class="n">used</span><span class="o">(</span><span class="n">coupon</span><span class="o">,</span> <span class="n">user</span><span class="o">))</span> <span class="o">{</span>
+        <span class="c1">//已使用的优惠券
+</span>        <span class="o">???</span>
+      <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">fetched</span><span class="o">(</span><span class="n">coupon</span><span class="o">,</span> <span class="n">user</span><span class="o">))</span> <span class="o">{</span>
+          <span class="c1">//已领取但未使用的优惠券
+</span>          <span class="o">???</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+          <span class="c1">//未领取的优惠券
+</span>          <span class="o">???</span>
+        <span class="o">}</span>
+      <span class="o">}</span>
+    <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+      <span class="c1">//已过期的优惠券
+</span>      <span class="o">???</span>
+    <span class="o">}</span>
+  <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+    <span class="c1">//已失效的优惠券
+</span>    <span class="o">???</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div><p>上面的代码能够完成我们的需求，但是，当优惠券的状态变多的时候，该方法传入的参数也会有所变化，「if-else」语句层级也会越多，非常容易出错，同时代码表达的意思也没那么明确，可读性极差。</p><p>所以我们能否重新组织一下数据结构，使之能够利用「模式匹配」？</p><h5 id="利用-adt-重新组织-1">利用 <code class="highlighter-rouge">ADT</code> 重新组织：</h5><p>分析：我们在使用优惠券的时候无非就是判断这几种「状态」，那我们就利用 <code class="highlighter-rouge">ADT</code> 将这些状态抽象化：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">sealed</span> <span class="k">trait</span> <span class="nc">CouponStatus</span> <span class="o">{</span>
+
+  <span class="c1">//每种状态共用的一些信息
+</span>  <span class="k">val</span> <span class="n">base</span><span class="k">:</span> <span class="kt">CouponStatusBase</span>
+<span class="o">}</span>
+
+<span class="k">case</span> <span class="k">class</span> <span class="nc">CouponStatusBase</span> <span class="o">(</span>
+  <span class="n">coupon</span><span class="k">:</span> <span class="kt">Coupon</span><span class="o">,</span>
+  <span class="o">...</span>
+<span class="o">)</span>
+
+<span class="c1">//未领取
+</span><span class="k">case</span> <span class="k">class</span> <span class="nc">StatusNotFetched</span> <span class="o">(</span>
+  <span class="n">base</span><span class="k">:</span> <span class="kt">CouponStatusBase</span>
+<span class="o">)</span> <span class="k">extends</span> <span class="nc">CouponStatus</span>
+
+<span class="c1">//已领取但未使用
+</span><span class="k">case</span> <span class="k">class</span> <span class="nc">StatusFetched</span> <span class="o">(</span>
+  <span class="n">base</span><span class="k">:</span> <span class="kt">CouponStatusBase</span><span class="o">,</span>
+  <span class="n">user</span><span class="k">:</span> <span class="kt">User</span>
+<span class="o">)</span> <span class="k">extends</span> <span class="nc">CouponStatus</span>
+
+<span class="c1">//已使用
+</span><span class="k">case</span> <span class="k">class</span> <span class="nc">StatusUsed</span> <span class="o">(</span>
+  <span class="n">base</span><span class="k">:</span> <span class="kt">CouponStatusBase</span><span class="o">,</span>
+  <span class="n">user</span><span class="k">:</span> <span class="kt">User</span>
+<span class="o">)</span> <span class="k">extends</span> <span class="nc">CouponStatus</span>
+
+<span class="c1">//过期优惠券
+</span><span class="k">case</span> <span class="k">class</span> <span class="nc">StatusExpired</span> <span class="o">(</span>
+  <span class="n">base</span><span class="k">:</span> <span class="kt">CouponStatusBase</span>
+<span class="o">)</span> <span class="k">extends</span> <span class="nc">CouponStatus</span>
+
+<span class="k">case</span> <span class="k">object</span> <span class="nc">StatusUnAvilable</span> <span class="k">extends</span> <span class="nc">CouponStatus</span>
+</code></pre></div><p>我们利用 <code class="highlighter-rouge">ADT</code> 将「状态」抽象化了，并且将每种「状态」所需要使用到的数据全部构造在了一起，那现在我们再根据不同的「状态」去渲染页面就变成了：</p><div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">def</span> <span class="n">f</span><span class="o">(</span><span class="n">status</span><span class="k">:</span> <span class="kt">CouponStatus</span><span class="o">)</span> <span class="k">=</span> <span class="n">status</span> <span class="k">match</span> <span class="o">{</span>
+  <span class="k">case</span> <span class="nc">StatusNotFetched</span><span class="o">(</span><span class="n">base</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="o">???</span>
+  <span class="k">case</span> <span class="nc">StatusFetched</span><span class="o">(</span><span class="n">base</span><span class="o">,</span> <span class="n">user</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="o">???</span>
+  <span class="k">case</span> <span class="nc">StatusUsed</span><span class="o">(</span><span class="n">base</span><span class="o">,</span> <span class="n">user</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="o">???</span>
+  <span class="k">case</span> <span class="nc">StatusExpired</span><span class="o">(</span><span class="n">base</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="o">???</span>
+  <span class="k">case</span> <span class="nc">StatusUnAvilable</span> <span class="k">=&gt;</span> <span class="o">???</span>
+<span class="o">}</span>
+</code></pre></div><p>可以看到通过用 <code class="highlighter-rouge">ADT</code> 抽象之后的数据结构在「模式匹配」的时候非常清晰，并且我们将不同状态下所需要的数据全部构造在了一起，也使得我们在模式匹配之后可以直接利用 <code class="highlighter-rouge">status</code> 去使用这些数据，不用再通过方法去获取了。</p><p>通过本例，我们可以发现，通过 <code class="highlighter-rouge">ADT</code> 可以将数据「高度抽象」，使得数据的「具体信息」变得简洁，同时「概括能力」变得更强，数据更加「完备」。</p><h2 id="延伸阅读">延伸阅读</h2><p><a href="https://wiki.haskell.org/Algebraic_data_type">Algebraic data type</a></p><p><a href="http://chris-taylor.github.io/blog/2013/02/10/the-algebra-of-algebraic-data-types/">The Algebra of Algebraic Data Types, Part 1</a></p><p><a href="http://chris-taylor.github.io/blog/2013/02/11/the-algebra-of-algebraic-data-types-part-ii/">The Algebra of Algebraic Data Types, Part 2</a></p><p><a href="http://chris-taylor.github.io/blog/2013/02/13/the-algebra-of-algebraic-data-types-part-iii/">The Algebra of Algebraic Data Types, Part 3</a></p></article><div class="page-navigation"> <a class="next" href="/notes/performance-in-collection" title="NEXT: 如何在 Scala 中科学地操作 collection（二）：集合性能比较">&lt;&lt;</a> <span> &middot; </span> <a class="home" href="/" title="Back to Homepage">Home</a> <span> &middot; </span> <a class="prev" href="/notes/How-to-Handle-collection-in-scala" title="PREV: 如何在 Scala 中科学地操作 collection（一）：集合类型与操作">&gt;&gt;</a></div></main><div class="footer"> <!-- 多说评论框 start --><div class="ds-thread" data-thread-key="如何在 Scala 中利用 ADT 良好地组织业务" data-title="如何在 Scala 中利用 ADT 良好地组织业务" data-url="http://shawdubie.com/notes/如何在 Scala 中利用 ADT 良好地组织业务"></div><!-- 多说评论框 end --> · <span class="block">Made with &hearts; using <a href="http://jekyllrb.com/" target="_blank">Jekyll</a> &amp; <a href="https://github.com/heiswayi/the-plain" title="The Plain theme by Heiswayi Nrird" target="_blank">The Plain</a> &middot; &lt;/&gt; on <a href="https://github.com/Shonrain" title="Hosted on GitHub" target="_blank">GitHub</a></span> <span class="block">&copy; 2020 ShawDubie</span></div></body></html>

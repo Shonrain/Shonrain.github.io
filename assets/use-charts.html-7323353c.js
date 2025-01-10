@@ -1,1 +1,0 @@
-const e=JSON.parse('{"key":"v-cb7b41c4","path":"/components/use-charts.html","title":"useCharts","lang":"zh-CN","frontmatter":{},"headers":[{"level":3,"title":"基本用法","slug":"基本用法","link":"#基本用法","children":[]},{"level":3,"title":"API","slug":"api","link":"#api","children":[]}],"git":{"updatedTime":1690947596000},"filePathRelative":"components/use-charts.md"}');export{e as data};
